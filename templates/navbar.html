@@ -1,0 +1,12 @@
+{{ define "navbar" }}
+{{if .LoggedIn}}
+    <span class="welcome"><strong>Welcome, {{ .Username }}!</strong></span>
+    <a href="/create-post">Create a new post</a>
+    <a href="/liked-posts">Liked posts</a>
+    <a href="/my-posts">My posts</a>
+    <a href="/logout">Log out</a>
+{{else}}
+    <a href="/sign-up">Sign up</a>
+    <a href="/sign-in-form">Sign in</a>
+{{end}}
+{{ end }}

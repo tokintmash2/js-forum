@@ -1,0 +1,17 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+    <link rel="stylesheet" href="/static/base.css">
+</head>
+<body>
+    <nav>
+        {{ template "navbar" . }}
+    </nav>
+    
+    <script src="/static/forum.js" type="module"></script>
+    
+</body>
+</html>
+{{end}}

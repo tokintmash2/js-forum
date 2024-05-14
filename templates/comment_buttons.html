@@ -1,0 +1,16 @@
+{{ define "comment_buttons" }}
+    <div class="comment-buttons">
+        {{ if $.LoggedIn }}
+            <form action="/like-comment" method="post">
+                <input type="hidden" name="comment_id" value="{{ .ID }}">
+                <button type="submit" name="action" value="like">Like</button>
+            </form>
+            <form action="/dislike-comment" method="post">
+                <input type="hidden" name="comment_id" value="{{ .ID }}">
+                <button type="submit" name="action" value="dislike">Dislike</button>
+            </form>
+        {{ else }}
+            <p>Login to interact</p>
+        {{ end }}
+    </div>
+{{ end }}

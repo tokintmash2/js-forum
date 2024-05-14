@@ -1,0 +1,12 @@
+{{ define "like_buttons"}}
+<div class="post-buttons">
+    <form action="/like" method="post">
+        <input type="hidden" name="post_id" value="{{ .ID }}">
+        <button type="submit" name="action" value="like">Like</button>
+    </form>
+    <form action="/dislike" method="post">
+        <input type="hidden" name="post_id" value="{{ .ID }}">
+        <button type="submit" name="action" value="dislike">Dislike</button>
+    </form>
+</div>
+{{ end }}

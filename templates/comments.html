@@ -1,0 +1,21 @@
+{{ define "comments" }}
+    <div class="comments">
+        {{range .Comments}}
+        <div class="comment">
+            <p>{{ .Content }}</p>
+            <p>Author: {{ .Author }}</p>
+            <p>Likes: {{ .Likes }}, Dislikes: {{ .Dislikes }}</p>
+        </div>
+        <div class="comment-buttons">
+            <form action="/like-comment" method="post">
+                <input type="hidden" name="comment_id" value="{{ .ID }}">
+                <button type="submit" name="action" value="like">Like</button>
+            </form>
+            <form action="/dislike-comment" method="post">
+                <input type="hidden" name="comment_id" value="{{ .ID }}">
+                <button type="submit" name="action" value="dislike">Dislike</button>
+            </form>
+        </div>
+        {{end}}
+    </div>
+{{ end }}

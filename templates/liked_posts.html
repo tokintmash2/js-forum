@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Liked Posts</title>
+    <link rel="stylesheet" href="/static/liked_posts.css">
+    <link rel="stylesheet" href="/static/base.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a>
+    </nav>
+    <h1>Liked Posts</h1>
+    {{ if .LikedPosts }}
+        {{ range .LikedPosts }}
+            <div class="content-box">
+                <h3>{{ .Title }}</h3>
+                <p>{{ .Content }}</p>
+                <div class="post-details">
+                    <p>Author: {{ .Author }}</p>
+                    <p>Likes: {{ .Likes }}, Dislikes: {{ .Dislikes }}</p>
+                    <p>Created At: {{ .CreatedAt.Format "2006-01-02" }}</p>
+                </div>
+
+                {{ template "like_buttons" . }}
+
+                {{ template "add_comment" . }}
+                
+                {{ template "comments" . }}
+                
+            </div>
+        {{ end }}
+    {{ else }}
+        <p>No liked posts.</p>
+    {{ end }}
+    <script src="/static/commentToggle.js"></script>
+</body>
+</html>

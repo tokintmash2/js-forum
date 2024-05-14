@@ -1,0 +1,14 @@
+{{ define "display_comments" }}
+    <div class="comments">
+        {{ range .Comments }}
+            <div class="comment">
+                <p>{{ .Content }}</p>
+                <p>Author: {{ .Author }}</p>
+                <p>Likes: {{ .Likes }}, Dislikes: {{ .Dislikes }}</p>
+                {{ if $.LoggedIn }}
+                    {{ template "comment_buttons" . }}
+                {{ end }}
+            </div>
+        {{ end }}
+    </div>
+{{ end }}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Category Posts</title>
+    <link rel="stylesheet" href="/static/category_posts.css">
+    <link rel="stylesheet" href="/static/base.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a>
+    </nav>
+
+    <h2>Posts in this Category</h2>
+    {{ if .CategoryPosts }}
+        {{ range .CategoryPosts }}
+            <div class="post">
+                <div class="content-box">
+                    <h3>{{ .Title }}</h3>
+                    <p>{{ .Content }}</p>
+                    <div class="post-details">
+                        <p>Author: {{ .Author }}</p>
+                        <p>Likes: {{ .Likes }}, Dislikes: {{ .Dislikes }}</p>
+                        <p>Created At: {{ .CreatedAt.Format "2006-01-02" }}</p>
+                    </div>
+
+                    {{ if .LoggedIn }}
+                        {{ template "like_buttons" . }}
+                        {{ template "add_comment" . }}
+                    {{ end }}
+                    
+                    <div class="comment-container">
+                        {{ template "display_comments" . }}
+                    </div>
+
+                </div>
+            </div>
+            {{ end }}
+            {{ else }}
+            <p>No posts in this category.</p>
+            <script src="/static/commentToggle.js"></script>
+        {{ end }}
+</body>
+</html>

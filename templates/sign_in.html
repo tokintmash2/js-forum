@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <link rel="stylesheet" href="/static/sign_in.css">
+    <link rel="stylesheet" href="/static/GG_buttons.css">
+    <form action="/sign-in">
+        <div class="container">
+            <h1>Sign In</h1>
+            <p>{{.}}</p>
+            <p>Please fill in this form to sign in.</p>
+            <hr>
+
+            <label><b>Email</b></label>
+            <input type="text" placeholder="Enter Email" name="email" required>
+
+            <label><b>Password</b></label>
+            <input type="password" placeholder="Enter Password" name="password" required>
+            
+            <div class="clearfix">
+                <button type="submit" class="signinbtn">Sign In</button>
+            </div>
+        </div>
+    </form>
+</head>
+<body>
+    <div class="oauth-buttons">
+        <a href="/google-login" class="oauth-button google">
+            <img src="/static/img/google.png" alt="Google Icon"> Sign in with Google
+        </a>
+        <a href="/github-login" class="oauth-button github">
+            <img src="/static/img/github.png" alt="GitHub Icon"> Sign in with GitHub
+        </a>
+    </div>
+</body>
+</html>
