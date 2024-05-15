@@ -5,24 +5,25 @@ import (
 	"encoding/json"
 	"net/http"
 	"real-forum/database"
+	"real-forum/structs"
 	"real-forum/utils"
 	"time"
 )
 
 // PostDetails struct holds information about a post
-type PostDetails struct {
-	ID         int
-	UserID     int
-	Title      string
-	Content    string
-	CreatedAt  time.Time
-	Author     string
-	Likes      int
-	Dislikes   int
-	LoggedIn   bool
-	Comments   []utils.Comment
-	CategoryID int
-}
+// type PostDetails struct {
+// 	ID         int
+// 	UserID     int
+// 	Title      string
+// 	Content    string
+// 	CreatedAt  time.Time
+// 	Author     string
+// 	Likes      int
+// 	Dislikes   int
+// 	LoggedIn   bool
+// 	Comments   []utils.Comment
+// 	CategoryID int
+// }
 
 func RecentPostsHandler(w http.ResponseWriter, r *http.Request) {
 	threshold := time.Now().AddDate(0, 0, -365)
@@ -48,9 +49,9 @@ func RecentPostsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var recentPosts []PostDetails
+	var recentPosts []structs.PostDetails
 	for rows.Next() {
-		var post PostDetails
+		var post structs.PostDetails
 		var nullUsername sql.NullString
 		if err := rows.Scan(
 			&post.ID, &post.UserID, &post.Title, &post.Content, &post.CreatedAt,

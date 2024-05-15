@@ -45,7 +45,7 @@ func main() {
 	mux.HandleFunc("/sign-up", handlers.SignUpHandler)
 	mux.HandleFunc("/sign-in-form", handlers.SignInFormHandler)
 	mux.HandleFunc("/sign-up-form", handlers.SignUpFormHandler)
-	mux.HandleFunc("/category/", handlers.CategoryPostsHandler)
+	// mux.HandleFunc("/category/", handlers.CategoryPostsHandler)
 	mux.HandleFunc("/add-comment", handlers.AddCommentHandler)
 	mux.HandleFunc("/like-comment", handlers.LikeCommentHandler)
 	mux.HandleFunc("/dislike-comment", handlers.DislikeCommentHandler)
@@ -61,6 +61,7 @@ func main() {
 	mux.HandleFunc("/api/categories", api.CategoriesHandler)
 	mux.HandleFunc("/api/recents", api.RecentPostsHandler)
 	mux.HandleFunc("/api/home", api.HomeJSONHandler)
+	mux.HandleFunc("/api/category/", api.CategoryPostsApiHandler)
 
 	// Start the server on port 4000 and log its status
 	log.Println("Server started at :4000")

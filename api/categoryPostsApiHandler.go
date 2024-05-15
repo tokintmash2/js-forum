@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"real-forum/handlers"
@@ -69,20 +70,19 @@ func CategoryPostsApiHandler(writer http.ResponseWriter, request *http.Request) 
 	data := struct {
 		LoggedIn      bool
 		Username      string
-		CategoryPosts []PostDetails
+		CategoryPosts []handlers.PostDetails
 	}{
 		LoggedIn:      loggedIn,
 		Username:      username,
 		CategoryPosts: categoryPosts,
 	}
 
-	// Set the content type before executing the template
-	writer.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// Render the category_posts.html template with the fetched posts
-	err = utils.Templates.ExecuteTemplate(writer, "category_posts.html", data)
+	jsonData, err := json.Marshal(data)
 	if err != nil {
-		fmt.Println("Template execution error:", err)
+		http.Error(writer, "Error generating JSON", http.StatusInternalServerError)
 		return
 	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Write(jsonData)
 }
