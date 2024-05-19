@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"real-forum/utils"
+	"forum-auth/utils"
 	"net/http"
 	"strconv"
 	"time"

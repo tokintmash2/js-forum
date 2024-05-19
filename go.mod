@@ -1,7 +1,6 @@
-module real-forum
+module forum-auth
 
-go 1.22.2
-
+go 1.21.5
 
 require github.com/mattn/go-sqlite3 v1.14.18
 

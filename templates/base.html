@@ -9,9 +9,12 @@
     <nav>
         {{ template "navbar" . }}
     </nav>
+
+    <h2 class="category-header">Categories</h2>
+        {{ template "categories" . }}
     
-    <script src="/static/forum.js" type="module"></script>
-    
+    {{ template "recent_posts" . }}
+
 </body>
 </html>
 {{end}}

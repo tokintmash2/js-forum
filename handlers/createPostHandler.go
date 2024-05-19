@@ -1,13 +1,12 @@
 package handlers
 
 import (
-	"fmt"
+	"forum-auth/database"
+	"forum-auth/utils"
 	"html/template"
 	"log"
 	"net/http"
 	"path"
-	"real-forum/database"
-	"real-forum/utils"
 	"strconv"
 	"time"
 )
@@ -29,16 +28,9 @@ func CreatePostHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Fetch available categories from the database
-	jsonCategories, err := utils.GetCategories()
+	categories, err := utils.GetCategories()
 	if err != nil {
 		http.Error(writer, "Error fetching categories: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	var categories []utils.Category
-	err = utils.GenericUnmarshal(jsonCategories, &categories)
-	if err != nil {
-		fmt.Println("Error Unmarsh craetePOstHandler", err)
 		return
 	}
 
@@ -94,7 +86,7 @@ func CreatePostHandler(writer http.ResponseWriter, request *http.Request) {
 			}
 
 			// Fetch username for the logged-in user
-			username, err := GetUsername(userID)
+			username, err := getUsername(userID)
 			if err != nil {
 				http.Error(writer, "Error fetching username", http.StatusInternalServerError)
 				return
