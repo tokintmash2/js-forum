@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"forum-auth/database"
+	"real-forum/database"
 )
 
 // GetCategoryIDForPost retrieves the category ID associated with a post

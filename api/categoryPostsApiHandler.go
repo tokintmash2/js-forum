@@ -12,12 +12,15 @@ import (
 // CategoryPostsHandler handles requests for posts within a specific category
 func CategoryPostsApiHandler(writer http.ResponseWriter, request *http.Request) {
 	// Extract category ID from the URL
-	categoryIDStr := request.URL.Path[len("/category/"):]
+	categoryIDStr := request.URL.Path[len("/api/category/"):]
 	categoryID, err := strconv.Atoi(categoryIDStr)
 	if err != nil {
 		http.Error(writer, "Invalid category ID", http.StatusBadRequest)
 		return
 	}
+
+	fmt.Println("Requested Path:", request.URL.Path)
+	fmt.Println("Requested ID:", categoryID)
 
 	// Check if the user is logged in
 	sessionCookie, err := request.Cookie("session")

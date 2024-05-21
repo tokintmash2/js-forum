@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"forum-auth/database"
 	"html/template"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
+	"real-forum/database"
 	"strconv"
 	"strings"
 	"time"
@@ -288,7 +288,7 @@ const (
 )
 
 type GitHubUserData struct {
-	ID    int `json:"id"`
+	ID    int    `json:"id"`
 	Login string `json:"login"`
 	Email string `json:"email"`
 }
@@ -493,7 +493,6 @@ func fetchGitHubUserData(accessToken string) (GitHubUserData, error) {
 
 	return userData, nil
 }
-
 
 func updateGitHubIDInDatabase(userID int, github_id string) error {
 

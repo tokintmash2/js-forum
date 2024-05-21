@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"database/sql"
-	"forum-auth/database"
-	"forum-auth/utils"
+	"real-forum/database"
+	"real-forum/utils"
 	"net/http"
 )
 

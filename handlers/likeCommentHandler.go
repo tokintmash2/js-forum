@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"forum-auth/database"
-	"forum-auth/utils"
+	"real-forum/database"
+	"real-forum/utils"
 	"net/http"
 	"strconv"
 )

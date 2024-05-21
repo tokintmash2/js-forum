@@ -1,4 +1,4 @@
-import { fetchCategories, fetchRecentPosts } from './fetch.js';
+import { fetchCategories, fetchRecentPosts, fetchCatPosts } from './fetch.js';
 import { makeElement } from './make-elements.js';
 import { navbar } from './navbar.js';
 
@@ -11,15 +11,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // renderHomePage()
 
-function handleRoute(path) {
-    console.log('From handleRoute:', window.location.pathname);
+function handleRoute() {
+   
+    const path = window.location.pathname
+    const pathSegments = path.split('/').filter(segment => segment.length > 0)
+    const categoryId = parseInt(pathSegments[1], 10)
+
     switch (path) {
         case '/':
         case '':
             renderHomePage();
             break;
-        case '/category/1':
-            renderCategoryPage()
+        case `/category/${categoryId}`:
+            renderCategoryPage(categoryId)
+            break;
+        case '/sign-in':
+            signIn();
             break;
         default:
             break;
@@ -49,16 +56,88 @@ function renderHomePage() {
     fetchRecentPosts(appDiv)
 }
 
-function renderCategoryPage() {
+function renderCategoryPage(id) {
 
-    console.log('Rendering Category Page');
-    console.log('from renderCategoryPage')
-    appDiv.innerHTML = '<p>This is the category page.</p>'; 
+    // User functionality missing
+    // JS toggle script
 
-   
-    const testDiv = document.createElement('div')
-    testDiv.classList.add('testing')
-    appDiv.appendChild(testDiv)
+    appDiv.innerHTML = '';
+
+    const pageTitle = makeElement('h2', 'Title', '', 'Posts in this Category', '')
+    appDiv.appendChild(pageTitle)
+
+    fetchCatPosts(appDiv, id)
+
+    // <h2>Posts in this Category</h2>
+    // {{ if .CategoryPosts }}
+    //     {{ range .CategoryPosts }}
+    //         <div class="post">
+    //             <div class="content-box">
+    //                 <h3>{{ .Title }}</h3>
+    //                 <p>{{ .Content }}</p>
+    //                 <div class="post-details">
+    //                     <p>Author: {{ .Author }}</p>
+    //                     <p>Likes: {{ .Likes }}, Dislikes: {{ .Dislikes }}</p>
+    //                     <p>Created At: {{ .CreatedAt.Format "2006-01-02" }}</p>
+    //                 </div>
+
+    //                 {{ if .LoggedIn }}
+    //                     {{ template "like_buttons" . }}
+    //                     {{ template "add_comment" . }}
+    //                 {{ end }}
+                    
+    //                 <div class="comment-container">
+    //                     {{ template "display_comments" . }}
+    //                 </div>
+
+    //             </div>
+    //         </div>
+    //         {{ end }}
+    //         {{ else }}
+    //         <p>No posts in this category.</p>
+    //         <script src="/static/commentToggle.js"></script>
+    //     {{ end }}
+
+}
+
+function signIn() {
+
+    appDiv.innerHTML = `
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <link rel="stylesheet" href="/static/sign_in.css">
+    <link rel="stylesheet" href="/static/GG_buttons.css">
+    <form action="/sign-in">
+        <div class="container">
+            <h1>Sign In</h1>
+            <p>{{.}}</p>
+            <p>Please fill in this form to sign in.</p>
+            <hr>
+
+            <label><b>Email</b></label>
+            <input type="text" placeholder="Enter Email" name="email" required>
+
+            <label><b>Password</b></label>
+            <input type="password" placeholder="Enter Password" name="password" required>
+            
+            <div class="clearfix">
+                <button type="submit" class="signinbtn">Sign In</button>
+            </div>
+        </div>
+    </form>
+</head>
+<body>
+    <div class="oauth-buttons">
+        <a href="/google-login" class="oauth-button google">
+            <img src="/static/img/google.png" alt="Google Icon"> Sign in with Google
+        </a>
+        <a href="/github-login" class="oauth-button github">
+            <img src="/static/img/github.png" alt="GitHub Icon"> Sign in with GitHub
+        </a>
+    </div>
+</body>`
 }
 
 document.addEventListener('click', function(event) {
@@ -79,7 +158,7 @@ window.onpopstate = function(event) {
 };
 
 // Handle the initial route
-handleRoute(window.location.pathname);
+handleRoute();
 
   
 });

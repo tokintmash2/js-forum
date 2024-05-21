@@ -2,7 +2,7 @@ package utils
 
 import (
 	"database/sql"
-	"forum-auth/database"
+	"real-forum/database"
 )
 
 // GetCommentsForPost retrieves comments associated with a specific post ID

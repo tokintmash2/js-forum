@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"forum-auth/database"
+	"real-forum/database"
 	"time"
 )
 

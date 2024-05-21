@@ -3,91 +3,20 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	"forum-auth/database"
-	"forum-auth/utils"
 	"net/http"
-	"strconv"
+	"real-forum/database"
+	"real-forum/utils"
 	"time"
 )
 
 // HomePageHandler manages the homepage and handles displaying recent posts
 func HomePageHandler(writer http.ResponseWriter, request *http.Request) {
-	sessionCookie, err := request.Cookie("session")
-	loggedIn := false
-	var username string
+	http.ServeFile(writer, request, "index.html")
 
-	if err == nil {
-		sessionUUID := sessionCookie.Value
-		userID, validSession := utils.VerifySession(sessionUUID)
-		if validSession {
-			loggedIn = true
-
-			// Fetch username for the logged-in user
-			username, err = getUsername(userID)
-			if err != nil {
-				http.Error(writer, "Error fetching username", http.StatusInternalServerError)
-				return
-			}
-		}
-	}
-
-	// Fetch recent posts
-	recentPosts, err := getRecentPosts()
-	if err != nil {
-		http.Error(writer, "Error fetching recent posts: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Set LoggedIn for posts and their comments
-	for i := range recentPosts {
-		recentPosts[i].LoggedIn = loggedIn
-
-		// Fetch comments associated with this post
-		comments, err := utils.GetCommentsForPost(recentPosts[i].ID)
-		if err != nil {
-			http.Error(writer, "Error fetching comments for post "+strconv.Itoa(recentPosts[i].ID)+": "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Set the LoggedIn field for each comment within the post
-		for j := range comments {
-			comments[j].LoggedIn = loggedIn
-		}
-
-		// Assign comments to the respective post
-		recentPosts[i].Comments = comments
-	}
-
-	// Fetch all categories
-	allCategories, err := utils.GetCategories()
-	if err != nil {
-		http.Error(writer, "Error fetching categories", http.StatusInternalServerError)
-		return
-	}
-
-	// Prepare data for rendering the template
-	data := struct {
-		LoggedIn    bool
-		Username    string
-		RecentPosts []PostDetails
-		Categories  []utils.Category
-	}{
-		LoggedIn:    loggedIn,
-		Username:    username,
-		RecentPosts: recentPosts,
-		Categories:  allCategories,
-	}
-
-	// Render the template using the provided data
-	err = utils.Templates.ExecuteTemplate(writer, "base", data)
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		return
-	}
 }
 
-// getUsername retrieves the username for a given user ID
-func getUsername(userID int) (string, error) {
+// GetUsername retrieves the username for a given user ID
+func GetUsername(userID int) (string, error) {
 	var username sql.NullString
 
 	err := database.DB.QueryRow("SELECT username FROM users WHERE id = ?", userID).Scan(&username)
@@ -122,8 +51,8 @@ type PostDetails struct {
 	CategoryID int
 }
 
-// getRecentPosts retrieves recent posts within the last 7 days
-func getRecentPosts() ([]PostDetails, error) {
+// GetRecentPosts retrieves recent posts within the last 7 days
+func GetRecentPosts() ([]PostDetails, error) {
 	threshold := time.Now().AddDate(0, 0, -365)
 	rows, err := database.DB.Query(`
         SELECT 

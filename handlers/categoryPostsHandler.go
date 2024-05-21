@@ -3,9 +3,9 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	"forum-auth/database"
-	"forum-auth/utils"
 	"net/http"
+	"real-forum/database"
+	"real-forum/utils"
 	"strconv"
 )
 
@@ -31,7 +31,7 @@ func CategoryPostsHandler(writer http.ResponseWriter, request *http.Request) {
 			loggedIn = true
 
 			// Fetch username for the logged-in user
-			username, err = getUsername(userID)
+			username, err = GetUsername(userID)
 			if err != nil {
 				fmt.Println("Error fetching username for userID", userID, ":", err)
 				http.Error(writer, "Error fetching username", http.StatusInternalServerError)
@@ -41,7 +41,7 @@ func CategoryPostsHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Fetch posts associated with the given category ID including likes and dislikes
-	categoryPosts, err := getCategoryPosts(categoryID)
+	categoryPosts, err := GetCategoryPosts(categoryID)
 	if err != nil {
 		http.Error(writer, "Error fetching category posts", http.StatusInternalServerError)
 		return
@@ -88,8 +88,8 @@ func CategoryPostsHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-// getCategoryPosts retrieves posts associated with a given category ID
-func getCategoryPosts(categoryID int) ([]PostDetails, error) {
+// GetCategoryPosts retrieves posts associated with a given category ID
+func GetCategoryPosts(categoryID int) ([]PostDetails, error) {
 	// Fetch posts associated with the given category ID including likes and dislikes
 	rows, err := database.DB.Query(`
         SELECT 
