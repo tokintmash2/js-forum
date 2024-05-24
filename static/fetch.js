@@ -1,4 +1,5 @@
 import { makeElement } from "./make-elements.js";
+import { handleLikeDislike } from "./JS-handlers.js"
 
 export function fetchCategories(list) {
     fetch('/api/categories')
@@ -49,22 +50,19 @@ export function fetchCatPosts(body, id) {
                         '');
                     postBox.appendChild(postDetails);
 
-                    // Like buttons
-                    if(data.LoggedIn) {
+                     if(data.LoggedIn) {
                         const likeButtons = makeElement('div', '', 'post-buttons', '', '')
+                        
                         likeButtons.innerHTML = `
-                        <form action="/like" method="post">
-                            <input type="hidden" name="post_id" value=${post.ID}>
-                            <button type="submit" name="action" value="like">Like</button>
-                        </form>
-                        <form action="/dislike" method="post">
-                            <input type="hidden" name="post_id" value=${post.ID}>
-                            <button type="submit" name="action" value="dislike">Dislike</button>
-                        </form>
-                        `
-                        postBox.appendChild(likeButtons)
-                    }
-    
+                            <button class="like-button" data-post-id="${post.ID}">Like</button>
+                            <button class="dislike-button" data-post-id="${post.ID}">Dislike</button>
+                            `
+                        likeButtons.querySelector('.like-button').addEventListener('click', () => handleLikeDislike(post.ID, true));
+                        likeButtons.querySelector('.dislike-button').addEventListener('click', () => handleLikeDislike(post.ID, false));
+                        
+                        postBox.appendChild(likeButtons);
+                     }
+                    
                     // Comments
                     const commentBox = makeElement('div', '', 'comment-container', '', '');
                     const comments = makeElement('div', '', 'comments', '', '');

@@ -38,7 +38,7 @@ func LikePostHandler(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		alreadyLiked, err := checkIfPostLiked(userID, postID)
+		alreadyLiked, err := CheckIfPostLiked(userID, postID)
 		if err != nil {
 			http.Error(writer, "Error checking if post is already liked", http.StatusInternalServerError)
 			return
@@ -46,14 +46,14 @@ func LikePostHandler(writer http.ResponseWriter, request *http.Request) {
 
 		if alreadyLiked {
 			// Remove the like
-			err = removePostLike(userID, postID)
+			err = RemovePostLike(userID, postID)
 			if err != nil {
 				http.Error(writer, "Error removing like", http.StatusInternalServerError)
 				return
 			}
 		} else {
 			// Add the like
-			err = likePost(userID, postID)
+			err = LikePost(userID, postID)
 			if err != nil {
 				http.Error(writer, "Error liking post", http.StatusInternalServerError)
 				return
@@ -136,8 +136,8 @@ func DislikePostHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
-// removePostLike removes a like for a post from the database
-func removePostLike(userID, postID int) error {
+// RemovePostLike removes a like for a post from the database
+func RemovePostLike(userID, postID int) error {
 	_, err := database.DB.Exec(`
         DELETE FROM likes
         WHERE user_id = ? AND post_id = ? AND is_post_like = 1
@@ -160,8 +160,8 @@ func removePostDislike(userID, postID int) error {
 	return nil
 }
 
-// likePost adds a like for a post to the database
-func likePost(userID, postID int) error {
+// LikePost adds a like for a post to the database
+func LikePost(userID, postID int) error {
 	tx, err := database.DB.Begin()
 	if err != nil {
 		return err
@@ -178,7 +178,7 @@ func likePost(userID, postID int) error {
 	}
 
 	// Check if the user already liked the post
-	alreadyLiked, err := checkIfPostLiked(userID, postID)
+	alreadyLiked, err := CheckIfPostLiked(userID, postID)
 	if err != nil {
 		return err
 	}
@@ -259,7 +259,7 @@ func dislikePost(userID, postID int) error {
 }
 
 // checkIfPostLiked checks if a user has already liked a post
-func checkIfPostLiked(userID, postID int) (bool, error) {
+func CheckIfPostLiked(userID, postID int) (bool, error) {
 	var count int
 	err := database.DB.QueryRow(`
 		SELECT COUNT(*)

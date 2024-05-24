@@ -37,8 +37,8 @@ func main() {
 	mux.HandleFunc("/", handlers.NotFoundWrapper(handlers.HomePageHandler))
 	mux.HandleFunc("/create-post", handlers.CreatePostHandler)
 	mux.HandleFunc("/liked-posts", handlers.LikedPostsHandler)
-	mux.HandleFunc("/like", handlers.LikePostHandler)
-	mux.HandleFunc("/dislike", handlers.DislikePostHandler)
+	// mux.HandleFunc("/like", handlers.LikePostHandler)
+	// mux.HandleFunc("/dislike", handlers.DislikePostHandler)
 	mux.HandleFunc("/my-posts", handlers.MyPostsHandler)
 	mux.HandleFunc("/logout", handlers.LogoutHandler)
 	mux.HandleFunc("/sign-in", handlers.SignInHandler)
@@ -62,6 +62,10 @@ func main() {
 	mux.HandleFunc("/api/recents", api.RecentPostsHandler)
 	mux.HandleFunc("/api/home", api.HomeJSONHandler)
 	mux.HandleFunc("/api/category/", api.CategoryPostsApiHandler)
+	mux.HandleFunc("/api/likePost", api.LikePostHandler)
+	mux.HandleFunc("/api/dislikePost", api.LikePostHandler)
+
+	// '/api/likePost' : '/api/dislikePost';
 
 	// Start the server on port 4000 and log its status
 	log.Println("Server started at :4000")

@@ -1,4 +1,5 @@
 import { fetchCategories, fetchRecentPosts, fetchCatPosts } from './fetch.js';
+import { handleLikeDislike } from "./JS-handlers.js"
 import { makeElement } from './make-elements.js';
 import { navbar } from './navbar.js';
 
@@ -23,6 +24,7 @@ function handleRoute() {
             renderHomePage();
             break;
         case `/category/${categoryId}`:
+        case `/like`: // still testing
             renderCategoryPage(categoryId)
             break;
         case '/sign-in':
@@ -65,6 +67,9 @@ function renderCategoryPage(id) {
 
     const pageTitle = makeElement('h2', 'Title', '', 'Posts in this Category', '')
     appDiv.appendChild(pageTitle)
+
+    // likeButtons.querySelector('.like-button').addEventListener('click', () => handleLikeDislike(post.ID, true));
+    // likeButtons.querySelector('.dislike-button').addEventListener('click', () => handleLikeDislike(post.ID, false));
 
     fetchCatPosts(appDiv, id)
 
@@ -141,11 +146,9 @@ function signIn() {
 }
 
 document.addEventListener('click', function(event) {
-    console.log(event)
     if (event.target.tagName === 'A') {
         event.preventDefault();
         const path = event.target.getAttribute('href');
-        console.log('Link clicked:', path);
         window.history.pushState({}, '', path);
         handleRoute(path);
     }
