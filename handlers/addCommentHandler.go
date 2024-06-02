@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"real-forum/utils"
 	"net/http"
+	"real-forum/structs"
+	"real-forum/utils"
 	"strconv"
 	"time"
 )
@@ -47,7 +48,7 @@ func AddCommentHandler(writer http.ResponseWriter, request *http.Request) {
 		}
 
 		// Create a new comment associated with the post
-		newComment := utils.Comment{
+		newComment := structs.Comment{
 			UserID:    userID,
 			PostID:    postID,
 			Content:   commentContent,

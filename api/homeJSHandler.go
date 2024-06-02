@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"real-forum/handlers"
+	"real-forum/structs"
 	"real-forum/utils"
 	"strconv"
 )
@@ -21,7 +21,7 @@ func HomeJSONHandler(writer http.ResponseWriter, request *http.Request) {
 			loggedIn = true
 
 			// Fetch username for the logged-in user
-			username, err = handlers.GetUsername(userID)
+			username, err = utils.GetUsername(userID)
 			if err != nil {
 				http.Error(writer, "Error fetching username", http.StatusInternalServerError)
 				return
@@ -30,7 +30,7 @@ func HomeJSONHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Fetch recent posts
-	recentPosts, err := handlers.GetRecentPosts()
+	recentPosts, err := utils.GetRecentPosts()
 	if err != nil {
 		http.Error(writer, "Error fetching recent posts: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -69,7 +69,7 @@ func HomeJSONHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	var allCategories []utils.Category
+	var allCategories []structs.Category
 	err = json.Unmarshal([]byte(jsonCategories), &allCategories)
 	if err != nil {
 		fmt.Println("Error unmarshaling in HomeHandler", err)
@@ -81,8 +81,8 @@ func HomeJSONHandler(writer http.ResponseWriter, request *http.Request) {
 	data := struct {
 		LoggedIn    bool
 		Username    string
-		RecentPosts []handlers.PostDetails
-		Categories  []utils.Category
+		RecentPosts []structs.PostDetails
+		Categories  []structs.Category
 	}{
 		LoggedIn:    loggedIn,
 		Username:    username,

@@ -24,7 +24,7 @@ function handleRoute() {
             renderHomePage();
             break;
         case `/category/${categoryId}`:
-        case `/like`: // still testing
+        case `/like`:
             renderCategoryPage(categoryId)
             break;
         case '/sign-in':
@@ -68,41 +68,7 @@ function renderCategoryPage(id) {
     const pageTitle = makeElement('h2', 'Title', '', 'Posts in this Category', '')
     appDiv.appendChild(pageTitle)
 
-    // likeButtons.querySelector('.like-button').addEventListener('click', () => handleLikeDislike(post.ID, true));
-    // likeButtons.querySelector('.dislike-button').addEventListener('click', () => handleLikeDislike(post.ID, false));
-
     fetchCatPosts(appDiv, id)
-
-    // <h2>Posts in this Category</h2>
-    // {{ if .CategoryPosts }}
-    //     {{ range .CategoryPosts }}
-    //         <div class="post">
-    //             <div class="content-box">
-    //                 <h3>{{ .Title }}</h3>
-    //                 <p>{{ .Content }}</p>
-    //                 <div class="post-details">
-    //                     <p>Author: {{ .Author }}</p>
-    //                     <p>Likes: {{ .Likes }}, Dislikes: {{ .Dislikes }}</p>
-    //                     <p>Created At: {{ .CreatedAt.Format "2006-01-02" }}</p>
-    //                 </div>
-
-    //                 {{ if .LoggedIn }}
-    //                     {{ template "like_buttons" . }}
-    //                     {{ template "add_comment" . }}
-    //                 {{ end }}
-                    
-    //                 <div class="comment-container">
-    //                     {{ template "display_comments" . }}
-    //                 </div>
-
-    //             </div>
-    //         </div>
-    //         {{ end }}
-    //         {{ else }}
-    //         <p>No posts in this category.</p>
-    //         <script src="/static/commentToggle.js"></script>
-    //     {{ end }}
-
 }
 
 function signIn() {

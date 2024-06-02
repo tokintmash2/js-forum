@@ -47,25 +47,26 @@ func main() {
 	mux.HandleFunc("/sign-up-form", handlers.SignUpFormHandler)
 	// mux.HandleFunc("/category/", handlers.CategoryPostsHandler)
 	mux.HandleFunc("/add-comment", handlers.AddCommentHandler)
-	mux.HandleFunc("/like-comment", handlers.LikeCommentHandler)
-	mux.HandleFunc("/dislike-comment", handlers.DislikeCommentHandler)
+	// mux.HandleFunc("/like-comment", handlers.LikeCommentHandler)
+	// mux.HandleFunc("/dislike-comment", handlers.DislikeCommentHandler)
 	mux.HandleFunc("/github-login", handlers.GitHubLoginHandler)
 	mux.HandleFunc("/github-sign-up", handlers.GitHubLoginHandler)
 	mux.HandleFunc("/github-callback", handlers.GitHubCallbackHandler)
 	mux.HandleFunc("/google-login", handlers.GoogleLoginHandler)
 	mux.HandleFunc("/google-sign-up", handlers.GoogleLoginHandler)
 	mux.HandleFunc("/google-callback", handlers.GoogleCallbackHandler)
-	//--------- TESTING ----------------
-	mux.HandleFunc("/api/test", api.TestHandler)
+
 	// -------- JAvaScript API ---------
 	mux.HandleFunc("/api/categories", api.CategoriesHandler)
 	mux.HandleFunc("/api/recents", api.RecentPostsHandler)
 	mux.HandleFunc("/api/home", api.HomeJSONHandler)
 	mux.HandleFunc("/api/category/", api.CategoryPostsApiHandler)
 	mux.HandleFunc("/api/likePost", api.LikePostHandler)
-	mux.HandleFunc("/api/dislikePost", api.LikePostHandler)
+	mux.HandleFunc("/api/dislikePost", api.DislikePostHandler)
+	
+	mux.HandleFunc("/api/likeComment", api.LikeCommentHandler)
+	mux.HandleFunc("/api/dislikeComment", api.DislikeCommentHandler)
 
-	// '/api/likePost' : '/api/dislikePost';
 
 	// Start the server on port 4000 and log its status
 	log.Println("Server started at :4000")

@@ -2,24 +2,11 @@ package utils
 
 import (
 	"real-forum/database"
-	"time"
+	"real-forum/structs"
 )
 
-// Comment represents the structure of a comment
-type Comment struct {
-	ID        int
-	UserID    int
-	PostID    int
-	Content   string
-	CreatedAt time.Time
-	Author    string
-	Likes     int
-	Dislikes  int
-	LoggedIn  bool
-}
-
 // CreateComment creates a new comment in the database
-func CreateComment(newComment Comment) error {
+func CreateComment(newComment structs.Comment) error {
 	_, err := database.DB.Exec(`
         INSERT INTO comments (user_id, post_id, content, created_at)
         VALUES (?, ?, ?, ?)`,

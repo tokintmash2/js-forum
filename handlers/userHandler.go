@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"path"
 	"real-forum/database"
+	"real-forum/structs"
 	"strconv"
 	"strings"
 	"time"
@@ -142,11 +143,11 @@ func SignUpFormHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 // getUser extracts user data from the request
-func getUser(request *http.Request) User {
+func getUser(request *http.Request) structs.User {
 	email := request.FormValue("email")
 	password := request.FormValue("password")
 	username := request.FormValue("username")
-	return User{
+	return structs.User{
 		Email:    email,
 		Password: password,
 		Username: username,
@@ -171,18 +172,8 @@ func handleResponse(writer http.ResponseWriter, filename string, success bool, m
 	}
 }
 
-// User represents user data
-type User struct {
-	ID       int
-	Email    string
-	Password string
-	Username string
-	GitHubID string
-	GoogleID string
-}
-
 // createUser creates a new user in the database
-func createUser(newUser User) error {
+func createUser(newUser structs.User) error {
 	var emailCount, usernameCount int
 	err := database.DB.QueryRow("SELECT COUNT(*) FROM users WHERE email = ?", newUser.Email).Scan(&emailCount)
 	if err != nil {
@@ -217,7 +208,7 @@ func createUser(newUser User) error {
 }
 
 // verifyUser verifies user credentials
-func verifyUser(user User) (int, bool) {
+func verifyUser(user structs.User) (int, bool) {
 	var storedPassword string
 	var userID int
 	err := database.DB.QueryRow("SELECT id, password FROM users WHERE email = ?", user.Email).Scan(&userID, &storedPassword)
@@ -287,12 +278,6 @@ const (
 	githubRedirectURI  = "http://localhost:4000/github-callback"
 )
 
-type GitHubUserData struct {
-	ID    int    `json:"id"`
-	Login string `json:"login"`
-	Email string `json:"email"`
-}
-
 func GitHubLoginHandler(writer http.ResponseWriter, request *http.Request) {
 	githubAuthURL := "https://github.com/login/oauth/authorize"
 	githubAuthURL += "?client_id=454f332c762d46733ed6"
@@ -327,10 +312,10 @@ func GitHubCallbackHandler(writer http.ResponseWriter, request *http.Request) {
 	// fmt.Printf("GitHub User Data: %+v\n", userData)
 
 	// Check if the user already exists in the database
-	userID, verified := verifyUser(User{Email: userData.Email})
+	userID, verified := verifyUser(structs.User{Email: userData.Email})
 	if !verified {
 		// User doesn't exist, create a new user
-		newUser := User{
+		newUser := structs.User{
 			Email:    userData.Email,
 			Username: userData.Login,
 		}
@@ -413,14 +398,14 @@ func exchangeGitHubCodeForToken(code string) (string, error) {
 	return accessToken, nil
 }
 
-func fetchGitHubUserData(accessToken string) (GitHubUserData, error) {
+func fetchGitHubUserData(accessToken string) (structs.GitHubUserData, error) {
 	// GitHub user data endpoint
 	userDataURL := "https://api.github.com/user"
 
 	// Create a GET request to fetch user data
 	req, err := http.NewRequest("GET", userDataURL, nil)
 	if err != nil {
-		return GitHubUserData{}, err
+		return structs.GitHubUserData{}, err
 	}
 
 	req.Header.Set("Authorization", "Bearer "+accessToken)
@@ -429,30 +414,30 @@ func fetchGitHubUserData(accessToken string) (GitHubUserData, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return GitHubUserData{}, err
+		return structs.GitHubUserData{}, err
 	}
 	defer resp.Body.Close()
 
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return GitHubUserData{}, err
+		return structs.GitHubUserData{}, err
 	}
 
 	// fmt.Printf("GitHub User Data Response: %s\n", body)
 
 	// Parse the response body into a GitHubUserData struct
-	var userData GitHubUserData
+	var userData structs.GitHubUserData
 	err = json.Unmarshal(body, &userData)
 	if err != nil {
-		return GitHubUserData{}, err
+		return structs.GitHubUserData{}, err
 	}
 
 	// Retrieve the user's email separately using another GitHub API endpoint
 	emailURL := "https://api.github.com/user/emails"
 	req, err = http.NewRequest("GET", emailURL, nil)
 	if err != nil {
-		return GitHubUserData{}, err
+		return structs.GitHubUserData{}, err
 	}
 
 	req.Header.Set("Authorization", "Bearer "+accessToken)
@@ -460,14 +445,14 @@ func fetchGitHubUserData(accessToken string) (GitHubUserData, error) {
 	// Perform the request
 	resp, err = client.Do(req)
 	if err != nil {
-		return GitHubUserData{}, err
+		return structs.GitHubUserData{}, err
 	}
 	defer resp.Body.Close()
 
 	// Read the response body
 	emailBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return GitHubUserData{}, err
+		return structs.GitHubUserData{}, err
 	}
 
 	// fmt.Printf("GitHub User Email Response: %s\n", emailBody)
@@ -480,7 +465,7 @@ func fetchGitHubUserData(accessToken string) (GitHubUserData, error) {
 
 	err = json.Unmarshal(emailBody, &emails)
 	if err != nil {
-		return GitHubUserData{}, err
+		return structs.GitHubUserData{}, err
 	}
 
 	// Find the primary email
@@ -534,13 +519,6 @@ const (
 	googleRedirectURI  = "http://localhost:4000/google-callback"
 )
 
-// GoogleUserData represents user data from Google
-type GoogleUserData struct {
-	ID    string `json:"id"`
-	Email string `json:"email"`
-	Name  string `json:"name"`
-}
-
 func GoogleLoginHandler(writer http.ResponseWriter, request *http.Request) {
 	googleAuthURL := "https://accounts.google.com/o/oauth2/auth"
 	googleAuthURL += "?client_id=" + googleClientID
@@ -573,10 +551,10 @@ func GoogleCallbackHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// Check if the user already exists in the database
-	userID, verified := verifyUser(User{Email: userData.Email})
+	userID, verified := verifyUser(structs.User{Email: userData.Email})
 	if !verified {
 		// User doesn't exist, create a new user
-		newUser := User{
+		newUser := structs.User{
 			Email:    userData.Email,
 			Username: userData.Name,
 			// Set other fields as needed
@@ -662,14 +640,14 @@ func exchangeGoogleCodeForToken(code string) (string, error) {
 	return accessToken, nil
 }
 
-func fetchGoogleUserData(accessToken string) (GoogleUserData, error) {
+func fetchGoogleUserData(accessToken string) (structs.GoogleUserData, error) {
 	// Google user data endpoint
 	userDataURL := "https://www.googleapis.com/oauth2/v2/userinfo"
 
 	// Create a GET request to fetch user data
 	req, err := http.NewRequest("GET", userDataURL, nil)
 	if err != nil {
-		return GoogleUserData{}, err
+		return structs.GoogleUserData{}, err
 	}
 
 	req.Header.Set("Authorization", "Bearer "+accessToken)
@@ -678,21 +656,21 @@ func fetchGoogleUserData(accessToken string) (GoogleUserData, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return GoogleUserData{}, err
+		return structs.GoogleUserData{}, err
 	}
 	defer resp.Body.Close()
 
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return GoogleUserData{}, err
+		return structs.GoogleUserData{}, err
 	}
 
 	// Parse the response body into a GoogleUserData struct
-	var userData GoogleUserData
+	var userData structs.GoogleUserData
 	err = json.Unmarshal(body, &userData)
 	if err != nil {
-		return GoogleUserData{}, err
+		return structs.GoogleUserData{}, err
 	}
 
 	return userData, nil

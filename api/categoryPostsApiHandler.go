@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"real-forum/handlers"
+	"real-forum/structs"
 	"real-forum/utils"
 	"strconv"
 )
@@ -19,8 +19,8 @@ func CategoryPostsApiHandler(writer http.ResponseWriter, request *http.Request) 
 		return
 	}
 
-	fmt.Println("Requested Path:", request.URL.Path)
-	fmt.Println("Requested ID:", categoryID)
+	// fmt.Println("Requested Path:", request.URL.Path)
+	// fmt.Println("Requested ID:", categoryID)
 
 	// Check if the user is logged in
 	sessionCookie, err := request.Cookie("session")
@@ -34,7 +34,7 @@ func CategoryPostsApiHandler(writer http.ResponseWriter, request *http.Request) 
 			loggedIn = true
 
 			// Fetch username for the logged-in user
-			username, err = handlers.GetUsername(userID)
+			username, err = utils.GetUsername(userID)
 			if err != nil {
 				fmt.Println("Error fetching username for userID", userID, ":", err)
 				http.Error(writer, "Error fetching username", http.StatusInternalServerError)
@@ -44,7 +44,7 @@ func CategoryPostsApiHandler(writer http.ResponseWriter, request *http.Request) 
 	}
 
 	// Fetch posts associated with the given category ID including likes and dislikes
-	categoryPosts, err := handlers.GetCategoryPosts(categoryID)
+	categoryPosts, err := utils.GetCategoryPosts(categoryID)
 	if err != nil {
 		http.Error(writer, "Error fetching category posts", http.StatusInternalServerError)
 		return
@@ -73,7 +73,7 @@ func CategoryPostsApiHandler(writer http.ResponseWriter, request *http.Request) 
 	data := struct {
 		LoggedIn      bool
 		Username      string
-		CategoryPosts []handlers.PostDetails
+		CategoryPosts []structs.PostDetails
 	}{
 		LoggedIn:      loggedIn,
 		Username:      username,

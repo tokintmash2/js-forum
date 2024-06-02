@@ -5,12 +5,12 @@ import (
 	"log"
 	"net/http"
 	"real-forum/database"
-	"real-forum/utils"
+	"real-forum/structs"
 )
 
 func CategoriesHandler(w http.ResponseWriter, r *http.Request) {
 
-	var categories []utils.Category
+	var categories []structs.Category
 
 	rows, err := database.DB.Query("SELECT id, name FROM categories")
 	if err != nil {
@@ -20,7 +20,7 @@ func CategoriesHandler(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var category utils.Category
+		var category structs.Category
 		if err := rows.Scan(&category.ID, &category.Name); err != nil {
 			log.Fatal("Error scanning category row:", err)
 			return

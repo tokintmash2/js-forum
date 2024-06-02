@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"database/sql"
-	"real-forum/database"
-	"real-forum/utils"
 	"net/http"
+	"real-forum/database"
+	"real-forum/structs"
+	"real-forum/utils"
 )
 
 // MyPostsHandler handles requests to display posts of a logged-in user
@@ -29,7 +30,7 @@ func MyPostsHandler(writer http.ResponseWriter, request *http.Request) {
 			// Pass userPosts data to the template
 			data := struct {
 				LoggedIn  bool
-				UserPosts []PostDetails
+				UserPosts []structs.PostDetails
 			}{
 				LoggedIn:  loggedIn,
 				UserPosts: userPosts,
@@ -51,7 +52,7 @@ func MyPostsHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 // getUserPostsWithComments retrieves user posts along with their comments
-func getUserPostsWithComments(userID int) ([]PostDetails, error) {
+func getUserPostsWithComments(userID int) ([]structs.PostDetails, error) {
 	userPosts, err := getUserPosts(userID)
 	if err != nil {
 		return nil, err
@@ -75,7 +76,7 @@ func getUserPostsWithComments(userID int) ([]PostDetails, error) {
 }
 
 // getUserPosts fetches posts of a user from the database
-func getUserPosts(userID int) ([]PostDetails, error) {
+func getUserPosts(userID int) ([]structs.PostDetails, error) {
 	// Query the database to fetch posts for the given user ID
 	rows, err := database.DB.Query(`
         SELECT 
@@ -99,9 +100,9 @@ func getUserPosts(userID int) ([]PostDetails, error) {
 	}
 	defer rows.Close()
 
-	var userPosts []PostDetails
+	var userPosts []structs.PostDetails
 	for rows.Next() {
-		var post PostDetails
+		var post structs.PostDetails
 		var nullUsername sql.NullString
 
 		if err := rows.Scan(

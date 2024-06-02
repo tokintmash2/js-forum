@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path"
 	"real-forum/database"
+	"real-forum/structs"
 	"real-forum/utils"
 	"strconv"
 	"time"
@@ -35,7 +36,7 @@ func CreatePostHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	var categories []utils.Category
+	var categories []structs.Category
 	err = utils.GenericUnmarshal(jsonCategories, &categories)
 	if err != nil {
 		fmt.Println("Error Unmarsh craetePOstHandler", err)
@@ -43,7 +44,7 @@ func CreatePostHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	data := struct {
-		Categories []utils.Category
+		Categories []structs.Category
 	}{
 		Categories: categories,
 	}
@@ -69,7 +70,7 @@ func CreatePostHandler(writer http.ResponseWriter, request *http.Request) {
 		// Convert category IDs to integers
 		selectedCategoryIDs := convertToIntSlice(categoryIDs)
 
-		newPost := Post{
+		newPost := structs.Post{
 			UserID:      userID,
 			Title:       title,
 			Content:     content,
@@ -94,13 +95,13 @@ func CreatePostHandler(writer http.ResponseWriter, request *http.Request) {
 			}
 
 			// Fetch username for the logged-in user
-			username, err := GetUsername(userID)
+			username, err := utils.GetUsername(userID)
 			if err != nil {
 				http.Error(writer, "Error fetching username", http.StatusInternalServerError)
 				return
 			}
 
-			newComment := utils.Comment{
+			newComment := structs.Comment{
 				UserID:    userID,
 				PostID:    postID,
 				Content:   commentContent,
@@ -155,23 +156,8 @@ func convertToIntSlice(strSlice []string) []int {
 	return intSlice
 }
 
-// Post holds information about a post
-type Post struct {
-	ID          int
-	PostID      int
-	UserID      int
-	Title       string
-	Content     string
-	CreatedAt   time.Time
-	Author      string
-	Likes       int
-	Dislikes    int
-	CategoryIDs []int
-	Comments    []utils.Comment
-}
-
 // createPost creates a new post in the database
-func createPost(newPost Post) error {
+func createPost(newPost structs.Post) error {
 	tx, err := database.DB.Begin()
 	if err != nil {
 		return err

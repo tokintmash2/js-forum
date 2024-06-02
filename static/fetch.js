@@ -1,5 +1,5 @@
 import { makeElement } from "./make-elements.js";
-import { handleLikeDislike } from "./JS-handlers.js"
+import { handleLikeDislike, handleCommentLikes } from "./JS-handlers.js"
 
 export function fetchCategories(list) {
     fetch('/api/categories')
@@ -74,7 +74,18 @@ export function fetchCatPosts(body, id) {
                                 <p>Author: ${comment.Author}</p>
                                 <p>Likes: ${comment.Likes}, Dislikes: ${comment.Dislikes}</p>`,
                                 '');
-                            comments.appendChild(commentDiv); // This goes inside ForEach
+                                if(data.LoggedIn) {
+                                    const commentButtons = makeElement('div', '', 'comment-buttons', '', '')
+                                    commentButtons.innerHTML = `
+                                    <button class="like-button" data-comment-id="${comment.ID}">Like</button>
+                                    <button class="dislike-button" data-comment-id="${comment.ID}">Dislike</button>
+                                    `
+                                    commentButtons.querySelector('.like-button').addEventListener('click', () => handleCommentLikes(comment.ID, true));
+                                    commentButtons.querySelector('.dislike-button').addEventListener('click', () => handleCommentLikes(comment.ID, false));
+
+                                    commentDiv.appendChild(commentButtons)
+                                }
+                            comments.appendChild(commentDiv);
                         });
                     }
                     commentBox.appendChild(comments);

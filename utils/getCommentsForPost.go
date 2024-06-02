@@ -3,10 +3,11 @@ package utils
 import (
 	"database/sql"
 	"real-forum/database"
+	"real-forum/structs"
 )
 
 // GetCommentsForPost retrieves comments associated with a specific post ID
-func GetCommentsForPost(postID int) ([]Comment, error) {
+func GetCommentsForPost(postID int) ([]structs.Comment, error) {
 	// Query to fetch comments associated with a post including likes, dislikes, and author details
 	rows, err := database.DB.Query(`
         SELECT c.id, c.user_id, c.post_id, c.content, c.created_at,
@@ -28,9 +29,9 @@ func GetCommentsForPost(postID int) ([]Comment, error) {
 	}
 	defer rows.Close()
 
-	var comments []Comment
+	var comments []structs.Comment
 	for rows.Next() {
-		var comment Comment
+		var comment structs.Comment
 		var nullUsername sql.NullString
 		if err := rows.Scan(
 			&comment.ID, &comment.UserID, &comment.PostID, &comment.Content, &comment.CreatedAt,

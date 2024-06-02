@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"database/sql"
-	"real-forum/database"
-	"real-forum/utils"
 	"net/http"
+	"real-forum/database"
+	"real-forum/structs"
+	"real-forum/utils"
 )
 
 // LikedPostsHandler fetches and displays posts liked by the user
@@ -38,7 +39,7 @@ func LikedPostsHandler(writer http.ResponseWriter, request *http.Request) {
 			// Pass likedPosts data to template
 			data := struct {
 				LoggedIn   bool
-				LikedPosts []PostDetails
+				LikedPosts []structs.PostDetails
 			}{
 				LoggedIn:   loggedIn,
 				LikedPosts: likedPosts,
@@ -60,7 +61,7 @@ func LikedPostsHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 // getLikedPosts retrieves posts liked by the user from the database
-func getLikedPosts(userID int) ([]PostDetails, error) {
+func getLikedPosts(userID int) ([]structs.PostDetails, error) {
 	rows, err := database.DB.Query(`
         SELECT 
             p.id, p.user_id, p.title, p.content, p.created_at,
@@ -85,9 +86,9 @@ func getLikedPosts(userID int) ([]PostDetails, error) {
 	}
 	defer rows.Close()
 
-	var likedPosts []PostDetails
+	var likedPosts []structs.PostDetails
 	for rows.Next() {
-		var post PostDetails
+		var post structs.PostDetails
 		var nullUsername sql.NullString
 
 		if err := rows.Scan(
