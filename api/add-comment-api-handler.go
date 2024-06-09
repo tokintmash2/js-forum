@@ -1,15 +1,19 @@
-package handlers
+package api
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"real-forum/structs"
 	"real-forum/utils"
-	"strconv"
 	"time"
 )
 
 // AddCommentHandler handles adding a comment to a post
-func AddCommentHandler(writer http.ResponseWriter, request *http.Request) {
+func AddCommentApiHandler(writer http.ResponseWriter, request *http.Request) {
+
+	fmt.Println("AdCOmment Go Handler triggered")
+
 	// Check if the user is authenticated by verifying the session
 	cookie, err := request.Cookie("session")
 	if err != nil {
@@ -24,25 +28,34 @@ func AddCommentHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	
 	if request.Method == http.MethodPost {
-		// Parse form data
-		err := request.ParseForm()
+		var comment struct {
+			Content string `json:"content"`
+			PostID  int    `json:"post_id"`
+		}
+
+		fmt.Println(request.Body)
+		
+		err := json.NewDecoder(request.Body).Decode(&comment)
 		if err != nil {
-			http.Error(writer, "Error parsing form data", http.StatusInternalServerError)
+			http.Error(writer, "Invalid JSON payload", http.StatusBadRequest)
 			return
 		}
+
+		
 
 		// Get comment content and post ID from the form
-		commentContent := request.FormValue("comment_content")
-		postIDStr := request.FormValue("post_id")
-		postID, err := strconv.Atoi(postIDStr)
-		if err != nil {
-			http.Error(writer, "Invalid post ID", http.StatusBadRequest)
-			return
-		}
+		// commentContent := request.FormValue("comment_content")
+		// postIDStr := request.FormValue("post_id")
+		// postID, err := strconv.Atoi(postIDStr)
+		// if err != nil {
+		// 	http.Error(writer, "Invalid post ID", http.StatusBadRequest)
+		// 	return
+		// }
 
 		// Ensure comment content is not empty
-		if commentContent == "" {
+		if comment.Content == "" {
 			RedirectTo404(writer, request)
 			return
 		}
@@ -50,10 +63,12 @@ func AddCommentHandler(writer http.ResponseWriter, request *http.Request) {
 		// Create a new comment associated with the post
 		newComment := structs.Comment{
 			UserID:    userID,
-			PostID:    postID,
-			Content:   commentContent,
+			PostID:    comment.PostID,
+			Content:   comment.Content,
 			CreatedAt: time.Now(),
 		}
+
+		fmt.Println("Comment data:", newComment)
 
 		err = utils.CreateComment(newComment)
 		if err != nil {
@@ -61,9 +76,12 @@ func AddCommentHandler(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		// Redirect the user after adding the comment, back to the referring page
-		returnURL := request.Header.Get("Referer") // Get the referring URL
-		http.Redirect(writer, request, returnURL, http.StatusSeeOther)
+		response := map[string]interface{}{
+			"success": true,
+		}
+
+		writer.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(writer).Encode(response)
 		return
 	}
 

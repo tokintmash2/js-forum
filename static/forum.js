@@ -1,7 +1,9 @@
-import { fetchCategories, fetchRecentPosts, fetchCatPosts } from './fetch.js';
-import { handleLikeDislike } from "./JS-handlers.js"
+import { fetchCategories, fetchRecentPosts, fetchCatPosts, makeCatChkboxes, fetchMyPosts, fetchLikedPosts } from './fetch.js';
+import { handleLikeDislike, handleLogout, creatPostHandler } from "./JS-handlers.js"
 import { makeElement } from './make-elements.js';
+import { renderHomePage } from './render.js';
 import { navbar } from './navbar.js';
+
 
 // Get appDiv
 let appDiv = document.getElementById('app');
@@ -9,6 +11,8 @@ appDiv.innerHTML = '';
 
 // Main function
 document.addEventListener('DOMContentLoaded', function () {
+
+    
 
 // renderHomePage()
 
@@ -30,49 +34,74 @@ function handleRoute() {
         case '/sign-in':
             signIn();
             break;
+        case '/api/logout':
+            handleLogout()
+            renderHomePage()
+            break
+        case '/createPost':
+            renderCreatePost()
+            break
+        case '/my-posts':
+            renderMyPosts()
+            break
+        case '/liked-posts':
+            renderLikedPosts()
+            break
         default:
             break;
     }
 }
 
-function renderHomePage() {
+function renderMyPosts() {
     appDiv.innerHTML = '';
     navbar()
+    fetchMyPosts(appDiv) 
+}
 
-    const testLlink = makeElement('a', 'test', '', 'test', '/test')
-    appDiv.appendChild(testLlink)
+function renderLikedPosts() {
+    appDiv.innerHTML = '';
+    navbar()
+    fetchLikedPosts(appDiv) 
+}
 
-    // Create category headline
-    const catHeader = makeElement('h2', 'JScatHeader', 'category-header', 'Categories')
-    appDiv.appendChild(catHeader)
-    // Create category list
-    const list = makeElement('div', 'categoryList', 'categories-container', '')
-    // Insert categories right after category header
-    catHeader.insertAdjacentElement('afterend', list);
-    // Craete recent posts headline
-    const rcntPostsHeader = makeElement('h2', 'JSrcntsHeader', 'category-header', 'Recent posts')
-    appDiv.appendChild(rcntPostsHeader)
-    // Fetch categories
-    fetchCategories(list)
-    // Fetch recent posts
-    fetchRecentPosts(appDiv)
+// Render new Post page
+function renderCreatePost() {
+    appDiv.innerHTML = '';
+    navbar()
+    const newPostDiv = makeElement('div', 'newPostDiv', 'container', '', '')
+    const pageTitle = makeElement('h1', '', '', 'Create a New Post', '')
+    const newPostTitle = makeElement('div', 'newPostTitle', '', '', '', '')
+    newPostTitle.innerHTML = `
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title"><br><br>
+        `
+    const newPostBody = makeElement('div', 'newPostBody', '', '', '', '')
+    newPostBody.innerHTML = `
+        <label for="content">Content:</label><br>
+        <textarea id="content" name="content" rows="14" cols="50"></textarea><br><br>
+        `
+    const categorySelect = makeElement('div', 'catSelect', '', '', '', '')
+    makeCatChkboxes(categorySelect)
+
+    const submitBtn = makeElement('button', '', 'subm-button', 'Create Post', '')
+    submitBtn.addEventListener('click', creatPostHandler);
+    
+    newPostDiv.appendChild(pageTitle)
+    newPostDiv.appendChild(newPostTitle)
+    newPostDiv.appendChild(newPostBody)
+    newPostDiv.appendChild(categorySelect)
+    newPostDiv.appendChild(submitBtn)
+    appDiv.appendChild(newPostDiv)
 }
 
 function renderCategoryPage(id) {
-
-    // User functionality missing
-    // JS toggle script
-
     appDiv.innerHTML = '';
-
     const pageTitle = makeElement('h2', 'Title', '', 'Posts in this Category', '')
     appDiv.appendChild(pageTitle)
-
     fetchCatPosts(appDiv, id)
 }
 
 function signIn() {
-
     appDiv.innerHTML = `
     <head>
     <meta charset="UTF-8">
@@ -127,11 +156,6 @@ window.onpopstate = function(event) {
 };
 
 // Handle the initial route
-handleRoute();
-
-  
+handleRoute();  
 });
-
-
-
 

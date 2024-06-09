@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Function to reinitialize the JavaScript functionality for comments
-function reinitializeCommentFunctionality() {
+export function reinitializeCommentFunctionality() {
     // Find all the "Write Comment" buttons
     const commentButtons = document.querySelectorAll('.add-comment-btn');
 

@@ -11,6 +11,7 @@ import (
 	"path"
 	"real-forum/database"
 	"real-forum/structs"
+	"real-forum/utils"
 	"strconv"
 	"strings"
 	"time"
@@ -238,7 +239,7 @@ func createSession(userID int) (string, error) {
 
 	if err == nil {
 		// If an active session exists, clear it before creating a new one
-		err = clearSession(existingSessionID)
+		err = utils.ClearSession(existingSessionID)
 		if err != nil {
 			return "", err
 		}
@@ -718,17 +719,4 @@ func createSessionCookie(sessionUUID string) *http.Cookie {
 		HttpOnly: true,
 	}
 	return cookie
-}
-
-// clearSession clears a session by its UUID
-func clearSession(sessionUUID string) error {
-	_, err := database.DB.Exec(`
-		DELETE FROM sessions
-		WHERE session_uuid = ?`,
-		sessionUUID,
-	)
-	if err != nil {
-		return err
-	}
-	return nil
 }

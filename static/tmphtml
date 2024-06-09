@@ -1,0 +1,66 @@
+<div class="post">
+    <div class="content-box">
+        <h3>Shape of a Face</h3>
+        <p>I dreamt about discussing the shape of the face of a person I used to be in love with. I guess I always did wonder about the shape of his face. It's unusually round, I think. Of course, in a beautiful way.</p>
+        <div class="post-details">
+            <p>Author: Papakoi</p>
+            <p>Likes: 2, Dislikes: 1</p>
+            <p>Created At: 2023-12-22</p>
+        </div>
+        
+        
+            
+    <div class="post-buttons">
+        <form action="/like" method="post">
+            <input type="hidden" name="post_id" value="26">
+            <button type="submit" name="action" value="like">Like</button>
+        </form>
+        <form action="/dislike" method="post">
+            <input type="hidden" name="post_id" value="26">
+            <button type="submit" name="action" value="dislike">Dislike</button>
+        </form>
+    </div>
+
+
+                
+    <div class="add-comment-section">
+        <button class="add-comment-btn">Write Comment</button>
+        <form action="/add-comment" method="post" class="comment-input-field" style="display: block;">
+            <input type="hidden" name="post_id" value="26">
+            <input type="hidden" name="category_id" value="0">
+            <textarea name="comment_content" rows="6" cols="50" placeholder="Leave your comment here"></textarea>
+            <button type="submit">Add Comment</button>
+        </form>
+    </div>
+    <script src="/static/commentToggle.js"></script>
+
+
+                
+                
+    <div class="comment-container">
+                    
+        <div class="comments">
+            
+                <div class="comment">
+                    <p>That's sweet..</p>
+                    <p>Author: Lenny </p>
+                    <p>Likes: 1, Dislikes: 0</p>
+                    
+                        
+                    <div class="comment-buttons">
+                        
+                            <form action="/like-comment" method="post">
+                                <input type="hidden" name="comment_id" value="40">
+                                <button type="submit" name="action" value="like">Like</button>
+                            </form>
+                            <form action="/dislike-comment" method="post">
+                                <input type="hidden" name="comment_id" value="40">
+                                <button type="submit" name="action" value="dislike">Dislike</button>
+                            </form>
+                        
+                    </div>                    
+                </div>            
+            </div>
+        </div>                
+    </div>
+</div>

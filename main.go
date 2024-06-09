@@ -35,20 +35,13 @@ func main() {
 
 	// Define HTTP request handlers for various endpoints
 	mux.HandleFunc("/", handlers.NotFoundWrapper(handlers.HomePageHandler))
-	mux.HandleFunc("/create-post", handlers.CreatePostHandler)
-	mux.HandleFunc("/liked-posts", handlers.LikedPostsHandler)
-	// mux.HandleFunc("/like", handlers.LikePostHandler)
-	// mux.HandleFunc("/dislike", handlers.DislikePostHandler)
-	mux.HandleFunc("/my-posts", handlers.MyPostsHandler)
-	mux.HandleFunc("/logout", handlers.LogoutHandler)
+	// mux.HandleFunc("/liked-posts", handlers.LikedPostsHandler)
+	// mux.HandleFunc("/my-posts", handlers.MyPostsHandler)
 	mux.HandleFunc("/sign-in", handlers.SignInHandler)
 	mux.HandleFunc("/sign-up", handlers.SignUpHandler)
 	mux.HandleFunc("/sign-in-form", handlers.SignInFormHandler)
 	mux.HandleFunc("/sign-up-form", handlers.SignUpFormHandler)
-	// mux.HandleFunc("/category/", handlers.CategoryPostsHandler)
-	mux.HandleFunc("/add-comment", handlers.AddCommentHandler)
-	// mux.HandleFunc("/like-comment", handlers.LikeCommentHandler)
-	// mux.HandleFunc("/dislike-comment", handlers.DislikeCommentHandler)
+	// mux.HandleFunc("/add-comment", handlers.AddCommentHandler)
 	mux.HandleFunc("/github-login", handlers.GitHubLoginHandler)
 	mux.HandleFunc("/github-sign-up", handlers.GitHubLoginHandler)
 	mux.HandleFunc("/github-callback", handlers.GitHubCallbackHandler)
@@ -63,10 +56,13 @@ func main() {
 	mux.HandleFunc("/api/category/", api.CategoryPostsApiHandler)
 	mux.HandleFunc("/api/likePost", api.LikePostHandler)
 	mux.HandleFunc("/api/dislikePost", api.DislikePostHandler)
-	
 	mux.HandleFunc("/api/likeComment", api.LikeCommentHandler)
 	mux.HandleFunc("/api/dislikeComment", api.DislikeCommentHandler)
-
+	mux.HandleFunc("/api/logout", api.LogoutHandler)
+	mux.HandleFunc("/api/create-post", api.CreatePostApiHandler)
+	mux.HandleFunc("/api/my-posts", api.MyPostsApiHandler)
+	mux.HandleFunc("/api/liked-posts", api.LikedPostsApiHandler)
+	mux.HandleFunc("/api/add-comment", api.AddCommentApiHandler)
 
 	// Start the server on port 4000 and log its status
 	log.Println("Server started at :4000")

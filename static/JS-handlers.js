@@ -1,3 +1,5 @@
+import { renderHomePage } from "./render.js";
+
 export function handleLikeDislike(postId, isLike) {
     const url = isLike ? '/api/likePost' : '/api/dislikePost';
     console.log('Post ID:', postId);
@@ -94,9 +96,103 @@ export function handleCommentLikes(commentId, isLike) {
     });
 }
 
-// Post details element structure:
-    // <div class="post-details">
-    // <p>Author: Papakoi</p>
-    // <p>Likes: 2, Dislikes: 1</p>
-    // <p>Created at: 12/22/2023</p></div>
-    // Must update Likes/Dislikes 
+export function handleLogout() {
+    fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Perform any client-side clean-up, such as updating the UI
+            console.log('Logout successful');
+            // Redirect or render the home page
+            // renderHomePage();
+        } else {
+            console.error('Logout failed');
+        }
+    })
+    .catch(error => {
+        console.error('Error during logout:', error);
+    });
+}
+
+export function creatPostHandler() {
+    const title = document.getElementById('title').value;
+    const content = document.getElementById('content').value;
+    const categoryIDs = Array.from(document.querySelectorAll('input[name="categoryIDs"]:checked')).map(checkbox => parseInt(checkbox.value));
+
+    const postData = {
+        title: title,
+        content: content,
+        categoryIDs: categoryIDs
+    };
+
+    fetch('/api/create-post', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(postData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => { throw new Error(text) });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            renderHomePage()
+            console.log('Post created successfully');
+            // Redirect or update the UI as needed
+        } else {
+            console.error('Error creating post');
+        }
+    })
+    .catch(error => {
+        console.error('Error creating post:', error);
+    });
+}
+
+export function createCommentHandler(post) {
+   
+    const postID = parseInt(post)
+    // const postID = document.getElementById('content').value
+    const content = document.getElementsByName('comment_content').value;
+    // const categoryIDs = Array.from(document.querySelectorAll('input[name="categoryIDs"]:checked')).map(checkbox => parseInt(checkbox.value));
+
+    const commentData = {
+        post_id: postID,
+        content: content,
+        // categoryIDs: categoryIDs
+    };
+
+    fetch('/api/add-comment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(commentData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => { throw new Error(text) });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            renderHomePage()
+            console.log('Comment added successfully');
+            // Redirect or update the UI as needed
+        } else {
+            console.error('Error adding comment');
+        }
+    })
+    .catch(error => {
+        console.error('Error adding comment:', error);
+    });
+}

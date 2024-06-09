@@ -14,10 +14,10 @@ export function navbar() {
         .then(userData => {
             if(userData.LoggedIn) {
                 const welcome =  makeElement('span', '', 'welcome', `Welcome, ${userData.username}!`, '')
-                const createPost = makeElement('a', '', '', 'Create a new post', '/create-post')
+                const createPost = makeElement('a', '', '', 'Create a new post', '/createPost')
                 const likedPosts = makeElement('a', '', '', 'My liked posts', '/liked-posts')
                 const myPosts = makeElement('a', '', '', 'My posts', '/my-posts')
-                const logOut = makeElement('a', '', '', 'Log out', '/logout')
+                const logOut = makeElement('a', '', '', 'Log out', '/api/logout')
                 navSpan.appendChild(welcome)
                 navSpan.appendChild(createPost)
                 navSpan.appendChild(likedPosts)
