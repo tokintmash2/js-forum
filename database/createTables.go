@@ -22,6 +22,34 @@ func CreateTables() {
 		log.Fatal("Error creating users table:", err)
 	}
 
+	// Create message table
+	_, err = DB.Exec(`
+		CREATE TABLE IF NOT EXISTS messages (
+			id INTEGER PRIMARY KEY,
+			sender_id INTEGER,
+			receiver_id INTEGER,
+			content TEXT,
+			timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY(sender_id) REFERENCES users(id),
+			FOREIGN KEY(receiver_id) REFERENCES users(id)
+		)
+	`)
+	if err != nil {
+		log.Fatal("Error creating messages table:", err)
+	}
+
+	// Create online status table
+	_, err = DB.Exec(`
+		CREATE TABLE IF NOT EXISTS online_status (
+			user_id INTEGER PRIMARY KEY,
+			online BOOLEAN,
+			FOREIGN KEY(user_id) REFERENCES users(id)
+		)
+	`)
+	if err != nil {
+		log.Fatal("Error creating online_status table:", err)
+	}
+
 	// Create Posts table
 	_, err = DB.Exec(`
 		CREATE TABLE IF NOT EXISTS posts (

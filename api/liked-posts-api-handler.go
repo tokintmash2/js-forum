@@ -28,7 +28,6 @@ func LikedPostsApiHandler(writer http.ResponseWriter, request *http.Request) {
 			for i, post := range likedPosts {
 				comments, err := utils.GetCommentsForPost(post.ID)
 				if err != nil {
-					// Log the error to understand what went wrong with fetching comments
 					http.Error(writer, "Error fetching comments for post: "+err.Error(), http.StatusInternalServerError)
 					return
 				}

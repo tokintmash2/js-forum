@@ -12,7 +12,7 @@ import (
 // AddCommentHandler handles adding a comment to a post
 func AddCommentApiHandler(writer http.ResponseWriter, request *http.Request) {
 
-	fmt.Println("AdCOmment Go Handler triggered")
+	fmt.Println("AddComment Go Handler triggered")
 
 	// Check if the user is authenticated by verifying the session
 	cookie, err := request.Cookie("session")
@@ -28,31 +28,17 @@ func AddCommentApiHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	
 	if request.Method == http.MethodPost {
 		var comment struct {
 			Content string `json:"content"`
 			PostID  int    `json:"post_id"`
 		}
 
-		fmt.Println(request.Body)
-		
 		err := json.NewDecoder(request.Body).Decode(&comment)
 		if err != nil {
 			http.Error(writer, "Invalid JSON payload", http.StatusBadRequest)
 			return
 		}
-
-		
-
-		// Get comment content and post ID from the form
-		// commentContent := request.FormValue("comment_content")
-		// postIDStr := request.FormValue("post_id")
-		// postID, err := strconv.Atoi(postIDStr)
-		// if err != nil {
-		// 	http.Error(writer, "Invalid post ID", http.StatusBadRequest)
-		// 	return
-		// }
 
 		// Ensure comment content is not empty
 		if comment.Content == "" {
@@ -76,8 +62,28 @@ func AddCommentApiHandler(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
+		username, err := utils.GetUsername(userID)
+		if err != nil {
+			http.Error(writer, "Error retrieving username", http.StatusInternalServerError)
+			return
+		}
+
+		likeCount, dislikeCount, err := utils.GetCommentLikeCount(newComment.ID)
+		if err != nil {
+			http.Error(writer, "Error retrieving like/dislike counts", http.StatusInternalServerError)
+			return
+		}
+
 		response := map[string]interface{}{
 			"success": true,
+			"comment": map[string]interface{}{
+				"id":       newComment.ID,
+				"postID":   newComment.PostID,
+				"content":  newComment.Content,
+				"author":   username,
+				"likes":    likeCount,
+				"dislikes": dislikeCount,
+			},
 		}
 
 		writer.Header().Set("Content-Type", "application/json")

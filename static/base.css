@@ -178,6 +178,20 @@ textarea {
     border: 1px solid #ccc;
     border-radius: 3px;
 }
+input[type="email"] {
+    width: calc(100% - 24px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+input[type="password"] {
+    width: calc(100% - 24px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
 
 input[type="submit"],
 
@@ -205,4 +219,44 @@ input[type="checkbox"] {
 label {
     display: inline-block;
     margin-right: 15px;
+}
+
+sign-button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 3px;
+    background-color: #bfbfbf;
+    color: #000000;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+sign-button:hover {
+    background-color: #b9b9b9;
+}
+
+/* New styles for the 1/5 width section */
+
+.app-div {
+    display: flex;
+}
+
+.sidebar {
+    width: 20%; /* 1/5 of the screen horizontally */
+    background-color: #f4f4f4;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.main-content {
+    width: 80%; /* Remaining 4/5 of the screen horizontally */
+    padding: 20px;
+    overflow-y: auto;
+}
+
+#online-users {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
