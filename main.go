@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"real-forum/api"
@@ -71,30 +72,36 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	// Extract user ID from session or request
-	sessionUUID, err := r.Cookie("session")
+	sessionCookie, err := r.Cookie("session")
 	if err != nil {
-		log.Println(err)
+		log.Println("Session cookie not found:", err)
 		return
-	}
-	userID, validSession := utils.VerifySession(sessionUUID.Value)
+	}	
+
+	sessionUUID := sessionCookie.Value
+	userID, validSession := utils.VerifySession(sessionUUID)
+
+	fmt.Println("Session cookie:", sessionCookie.Value)
+	fmt.Println("sessiomUUID:", sessionUUID)
+	fmt.Println("Verify session return:", userID, validSession)
+
+
 	if !validSession {
 		log.Println("Invalid session")
 		return
 	}
 
-	// Set user online
+	log.Println("User connected:", userID)
+
 	err = utils.SetUserOnline(userID)
 	if err != nil {
 		log.Println("Error setting user online:", err)
 		return
 	}
 
-	// Listen for close messages
 	for {
 		_, _, err := conn.ReadMessage()
 		if err != nil {
-			// Set user offline
 			utils.SetUserOffline(userID)
 			log.Println("User disconnected:", userID)
 			break

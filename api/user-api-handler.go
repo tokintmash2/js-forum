@@ -28,7 +28,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		cookie := utils.CreateSessionCookie(sessionUUID)
 		http.SetCookie(w, cookie)
-		json.NewEncoder(w).Encode(map[string]bool{"success": true})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "sessionUUID": sessionUUID})
 	} else {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Wrong email or password"})
 	}

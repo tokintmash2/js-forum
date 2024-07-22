@@ -23,6 +23,8 @@ export function login() {
     .then(data => {
         if (data.success) {
             console.log('Login successful');
+            console.log("FE Cookie", document.cookie);
+            console.log("Data", data)
             connectWebSocket()
             document.getElementById('app').innerHTML = ''
             renderHomePage()
@@ -33,6 +35,26 @@ export function login() {
     })
     .catch(error => console.error('Error:', error));
 }
+
+// function connectWebSocket() {
+//     const socket = new WebSocket('ws://localhost:4000/ws');
+
+//     socket.onopen = function() {
+//         console.log('WebSocket connection established');
+//     };
+
+//     socket.onclose = function(event) {
+//         if (event.wasClean) {
+//             console.log('WebSocket connection closed cleanly');
+//         } else {
+//             console.log('WebSocket connection closed unexpectedly');
+//         }
+//     };
+
+//     socket.onerror = function(error) {
+//         console.error('WebSocket error:', error);
+//     };
+// }
 
 function connectWebSocket() {
     const socket = new WebSocket('ws://localhost:4000/ws');
@@ -47,12 +69,18 @@ function connectWebSocket() {
         } else {
             console.log('WebSocket connection closed unexpectedly');
         }
+        console.log('Close event:', event);
     };
 
     socket.onerror = function(error) {
         console.error('WebSocket error:', error);
     };
+
+    socket.onmessage = function(event) {
+        console.log('Message from server:', event.data);
+    };
 }
+
 
 export function signup() {
     const username = document.getElementById('signup-username').value;
@@ -112,6 +140,7 @@ export function handleLikeDislike(postId, isLike) {
     .then(data => {
         if (data.success) {
             console.log(data.newLikeCount); // New like count
+            console.log(document.cookie)
             const postDetailsElement = document.querySelector(`.like-button[data-post-id="${postId}"]`)
                 .closest('.post').querySelector('.post-details');
             if (postDetailsElement) {
