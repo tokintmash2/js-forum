@@ -69,8 +69,9 @@ export function makeCatChkboxes(container) {
 }
 
 export function fetchCatPosts(body, id) {
-    console.log(body)
-    fetch(`/api/category/${id}`)
+    const mainContent = body.querySelector('.main-content');
+    // const chatSection = body.children[1]
+   return fetch(`/api/category/${id}`) // Promise so, render function can wait
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -130,12 +131,14 @@ export function fetchCatPosts(body, id) {
 
                     commentBox.appendChild(comments);
                     postBox.appendChild(commentBox);
-                    body.appendChild(postDiv);
+                    mainContent.appendChild(postDiv)                    
                 });
             } else {
                 const noPosts = makeElements('div', '', '', 'No posts in this category.', '')
                 body.appendChild(noPosts);
             }
+            fetchOnlineUsers()
+            body.appendChild(mainContent);
         })
         .catch(error => {
             console.error('Error loading recent posts:', error);

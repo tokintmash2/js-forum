@@ -7,8 +7,8 @@ import { navbar } from './navbar.js';
 
 // Get appDiv
 let appDiv = document.getElementById('app');
-const mainContent = makeElements({type: 'div', classNames: 'main-content'})
-// const chatSection = makeElements({type: 'div', classNames: 'sidebar'})
+const mainContent = makeElements({ type: 'div', classNames: 'main-content' })
+const chatSection = makeElements({ type: 'div', classNames: 'sidebar' })
 appDiv.innerHTML = '';
 // mainContent.innerHTML = '';
 
@@ -28,13 +28,10 @@ document.addEventListener('DOMContentLoaded', function () {
             case '':
                 renderHomePage();
                 fetchOnlineUsers()
-                // connectWebSocket()
                 break;
             case `/category/${categoryId}`:
             case `/like`:
                 renderCategoryPage(categoryId)
-                fetchOnlineUsers()
-
                 break;
             case '/sign-in':
                 signIn();
@@ -60,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    
+
 
     function renderMyPosts() {
         appDiv.innerHTML = '';
@@ -80,8 +77,13 @@ document.addEventListener('DOMContentLoaded', function () {
         appDiv.innerHTML = ''
         const pageTitle = makeElements({ type: 'h2', name: 'Title', contents: 'Posts in this Category' })
         mainContent.appendChild(pageTitle)
-        fetchCatPosts(mainContent, id)
         appDiv.appendChild(mainContent)
+
+        fetchCatPosts(appDiv, id)
+            .then(() => { // Waiting for the promise until appending next child
+                appDiv.appendChild(chatSection)
+            })
+            .catch(console.error('Error fetching category posts:', error))
     }
 
     // signIn()

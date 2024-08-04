@@ -17,7 +17,7 @@ func LikeCommentHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	sessionUUID := cookie.Value
-	userID, validSession := utils.VerifySession(sessionUUID)
+	userID, validSession := utils.VerifySession(sessionUUID, "LikeCommentHandler")
 	if !validSession {
 		http.Redirect(writer, request, "/sign-in", http.StatusSeeOther)
 		return
@@ -88,7 +88,7 @@ func DislikeCommentHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	sessionUUID := cookie.Value
-	userID, validSession := utils.VerifySession(sessionUUID)
+	userID, validSession := utils.VerifySession(sessionUUID, "DislikeCommentHandler")
 	if !validSession {
 		http.Redirect(writer, request, "/sign-in", http.StatusSeeOther)
 		return

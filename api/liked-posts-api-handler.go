@@ -14,7 +14,7 @@ func LikedPostsApiHandler(writer http.ResponseWriter, request *http.Request) {
 
 	if err == nil {
 		sessionUUID := sessionCookie.Value
-		userID, validSession := utils.VerifySession(sessionUUID)
+		userID, validSession := utils.VerifySession(sessionUUID, "LikedPostsApiHandler")
 		if validSession {
 			loggedIn = true
 

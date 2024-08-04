@@ -1,40 +1,76 @@
 import { renderHomePage } from "./render.js";
 import { appendNewComment } from "./append.js";
 
-export function login() {
+export async function login() {
+
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
     if (!email || !password) {
-        alert('All fields are required.')
-        return
+        alert('Both fields are required.');
+        return;
     }
 
-    console.log("u:", email, "p:", password)
+    if (!validateEmail(email)) {
+        alert('Please enter a valid email address.');
+        return;
+    }
 
-    fetch('/api/login', {
+    const loginResponse = await fetch('/api/login', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email: email, password: password })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            console.log('Login successful');
-            console.log("FE Cookie", document.cookie);
-            console.log("Data", data)
-            connectWebSocket()
-            document.getElementById('app').innerHTML = ''
-            renderHomePage()
+        body: JSON.stringify({ email: email, password: password }),
+        headers: { 'Content-Type': 'application/json' },
+    });
 
-        } else {
-            alert('Login failed: ' + data.message);
-        }
-    })
-    .catch(error => console.error('Error:', error));
+    const loginData = await loginResponse.json();
+    if (loginData.success) {
+        // Wait for the cookie to be set
+        setTimeout(() => {
+            const ws = new WebSocket('ws://localhost:4000/ws');
+            ws.onopen = () => {
+                console.log('WebSocket connection established');
+            };
+        }, 1000); // Adjust the timeout as necessary
+        window.location.href = '/'
+    } else {
+        console.log('Login failed:', loginData.message);
+    }
 }
+
+
+// export function login() {
+//     const email = document.getElementById('login-email').value;
+//     const password = document.getElementById('login-password').value;
+
+//     if (!email || !password) {
+//         alert('Both fields are required.');
+//         return;
+//     }
+
+//     if (!validateEmail(email)) {
+//         alert('Please enter a valid email address.');
+//         return;
+//     }
+
+//     fetch('/api/login', {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json'
+//         },
+//         body: JSON.stringify({ email: email, password: password })
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.success) {
+//             alert('Login successful');
+//             console.log("Session UUID in response:", data.sessionUUID);
+//             connectWebSocket();
+//         } else {
+//             alert('Login failed: ' + data.message);
+//         }
+//     })
+//     .catch(error => console.error('Error:', error));
+// }
 
 // function connectWebSocket() {
 //     const socket = new WebSocket('ws://localhost:4000/ws');
@@ -56,31 +92,6 @@ export function login() {
 //     };
 // }
 
-function connectWebSocket() {
-    const socket = new WebSocket('ws://localhost:4000/ws');
-
-    socket.onopen = function() {
-        console.log('WebSocket connection established');
-    };
-
-    socket.onclose = function(event) {
-        if (event.wasClean) {
-            console.log('WebSocket connection closed cleanly');
-        } else {
-            console.log('WebSocket connection closed unexpectedly');
-        }
-        console.log('Close event:', event);
-    };
-
-    socket.onerror = function(error) {
-        console.error('WebSocket error:', error);
-    };
-
-    socket.onmessage = function(event) {
-        console.log('Message from server:', event.data);
-    };
-}
-
 
 export function signup() {
     const username = document.getElementById('signup-username').value;
@@ -92,7 +103,7 @@ export function signup() {
         return
     }
 
-    if(!validateEmail(email)) {
+    if (!validateEmail(email)) {
         alert('Please use a valid email address!')
         return
     }
@@ -104,23 +115,23 @@ export function signup() {
         },
         body: JSON.stringify({ username: username, email: email, password: password })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Signup successful');
-            // Handle successful signup (e.g., redirect to the login page)
-        } else {
-            alert('Signup failed: ' + data.message);
-        }
-    })
-    .catch(error => console.error('Error:', error));
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '/'
+                alert('Signup successful');
+            } else {
+                alert('Signup failed: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
 }
 
 export function handleLikeDislike(postId, isLike) {
     const url = isLike ? '/api/likePost' : '/api/dislikePost';
     console.log('Post ID:', postId);
     console.log('URL:', url);
-    
+
     fetch(url, {
         method: 'POST',
         headers: {
@@ -128,48 +139,48 @@ export function handleLikeDislike(postId, isLike) {
         },
         body: JSON.stringify({ post_id: postId })
     })
-    .then(response => {
-        console.log('Response Status:', response.status);
+        .then(response => {
+            console.log('Response Status:', response.status);
 
-        if (!response.ok) {
-            return response.text().then(text => { throw new Error(text) });
-        }
-        return response.json();
-    })
-    
-    .then(data => {
-        if (data.success) {
-            console.log(data.newLikeCount); // New like count
-            console.log(document.cookie)
-            const postDetailsElement = document.querySelector(`.like-button[data-post-id="${postId}"]`)
-                .closest('.post').querySelector('.post-details');
-            if (postDetailsElement) {
-                const likesDislikesElement = Array.from(postDetailsElement.querySelectorAll('p'))
-                    .find(p => p.textContent.includes('Likes:'));
-                if (likesDislikesElement) {
-                    // Extract dislikes count from the current text
-                    const dislikesCount = likesDislikesElement.textContent.match(/Dislikes: (\d+)/)[1];
-                    likesDislikesElement.textContent = `
-                        Likes: ${data.newLikeCount}, Dislikes: ${data.newDislikeCount}`;
-                } else {
-                    console.error('Likes/Dislikes element not found.');
-                }
-            } else {
-                console.error('Post details element not found.');
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text) });
             }
+            return response.json();
+        })
+
+        .then(data => {
+            if (data.success) {
+                console.log(data.newLikeCount); // New like count
+                console.log(document.cookie)
+                const postDetailsElement = document.querySelector(`.like-button[data-post-id="${postId}"]`)
+                    .closest('.post').querySelector('.post-details');
+                if (postDetailsElement) {
+                    const likesDislikesElement = Array.from(postDetailsElement.querySelectorAll('p'))
+                        .find(p => p.textContent.includes('Likes:'));
+                    if (likesDislikesElement) {
+                        // Extract dislikes count from the current text
+                        const dislikesCount = likesDislikesElement.textContent.match(/Dislikes: (\d+)/)[1];
+                        likesDislikesElement.textContent = `
+                        Likes: ${data.newLikeCount}, Dislikes: ${data.newDislikeCount}`;
+                    } else {
+                        console.error('Likes/Dislikes element not found.');
+                    }
+                } else {
+                    console.error('Post details element not found.');
+                }
             }
         })
-    
-    .catch(error => {
-        console.error('Error liking/disliking post:', error);
-    });
+
+        .catch(error => {
+            console.error('Error liking/disliking post:', error);
+        });
 }
 
 export function handleCommentLikes(commentId, isLike) {
     const url = isLike ? '/api/likeComment' : '/api/dislikeComment';
     console.log('Comment ID:', commentId);
     console.log('URL:', url);
-    
+
     fetch(url, {
         method: 'POST',
         headers: {
@@ -177,40 +188,40 @@ export function handleCommentLikes(commentId, isLike) {
         },
         body: JSON.stringify({ comment_id: commentId })
     })
-    .then(response => {
-        console.log('Response Status:', response.status);
+        .then(response => {
+            console.log('Response Status:', response.status);
 
-        if (!response.ok) {
-            return response.text().then(text => { throw new Error(text) });
-        }
-        return response.json();
-    })
-    
-    .then(data => {
-        if (data.success) {
-            console.log(data.newLikeCount); // New like count
-            const postDetailsElement = document.querySelector(`.like-button[data-comment-id="${commentId}"]`)
-                .closest('.comment');
-            if (postDetailsElement) {
-                const likesDislikesElement = Array.from(postDetailsElement.querySelectorAll('p'))
-                    .find(p => p.textContent.includes('Likes:'));
-                if (likesDislikesElement) {
-                    // Extract dislikes count from the current text
-                    const dislikesCount = likesDislikesElement.textContent.match(/Dislikes: (\d+)/)[1];
-                    likesDislikesElement.textContent = `
-                        Likes: ${data.newLikeCount}, Dislikes: ${data.newDislikeCount}`;
-                } else {
-                    console.error('Likes/Dislikes element not found.');
-                }
-            } else {
-                console.error('Post details element not found.');
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text) });
             }
+            return response.json();
+        })
+
+        .then(data => {
+            if (data.success) {
+                console.log(data.newLikeCount); // New like count
+                const postDetailsElement = document.querySelector(`.like-button[data-comment-id="${commentId}"]`)
+                    .closest('.comment');
+                if (postDetailsElement) {
+                    const likesDislikesElement = Array.from(postDetailsElement.querySelectorAll('p'))
+                        .find(p => p.textContent.includes('Likes:'));
+                    if (likesDislikesElement) {
+                        // Extract dislikes count from the current text
+                        const dislikesCount = likesDislikesElement.textContent.match(/Dislikes: (\d+)/)[1];
+                        likesDislikesElement.textContent = `
+                        Likes: ${data.newLikeCount}, Dislikes: ${data.newDislikeCount}`;
+                    } else {
+                        console.error('Likes/Dislikes element not found.');
+                    }
+                } else {
+                    console.error('Post details element not found.');
+                }
             }
         })
-    
-    .catch(error => {
-        console.error('Error liking/disliking post:', error);
-    });
+
+        .catch(error => {
+            console.error('Error liking/disliking post:', error);
+        });
 }
 
 export function handleLogout() {
@@ -220,18 +231,19 @@ export function handleLogout() {
             'Content-Type': 'application/json'
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('app').innerHTML = ''
-            console.log('Logout successful');
-        } else {
-            console.error('Logout failed');
-        }
-    })
-    .catch(error => {
-        console.error('Error during logout:', error);
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('app').innerHTML = ''
+                console.log('Logout successful');
+                window.location.href = '/'
+            } else {
+                console.error('Logout failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error during logout:', error);
+        });
 }
 
 export function creatPostHandler() {
@@ -252,23 +264,23 @@ export function creatPostHandler() {
         },
         body: JSON.stringify(postData)
     })
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => { throw new Error(text) });
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            renderHomePage()
-            console.log('Post created successfully');
-        } else {
-            console.error('Error creating post');
-        }
-    })
-    .catch(error => {
-        console.error('Error creating post:', error);
-    });
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text) });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                renderHomePage()
+                console.log('Post created successfully');
+            } else {
+                console.error('Error creating post');
+            }
+        })
+        .catch(error => {
+            console.error('Error creating post:', error);
+        });
 }
 
 export function createCommentHandler(post_ID) {
@@ -291,25 +303,25 @@ export function createCommentHandler(post_ID) {
         },
         body: JSON.stringify(commentData)
     })
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => { throw new Error(text) });
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            console.log('data:', data);
-            console.log('Comment added successfully');
-            appendNewComment(data.comment);
-            document.getElementById(`comment-post-id-${postID}`).value = ''; // Clear input
-        } else {
-            console.error('Error adding comment');
-        }
-    })
-    .catch(error => {
-        console.error('Error adding comment:', error);
-    });
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text) });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                console.log('data:', data);
+                console.log('Comment added successfully');
+                appendNewComment(data.comment);
+                document.getElementById(`comment-post-id-${postID}`).value = ''; // Clear input
+            } else {
+                console.error('Error adding comment');
+            }
+        })
+        .catch(error => {
+            console.error('Error adding comment:', error);
+        });
 }
 
 function validateEmail(email) {

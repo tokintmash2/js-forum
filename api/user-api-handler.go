@@ -65,7 +65,7 @@ func LogoutHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	sessionUUID := cookie.Value
-	userID, validSession := utils.VerifySession(sessionUUID)
+	userID, validSession := utils.VerifySession(sessionUUID, "LogoutHandler")
 	if !validSession {
 		http.Redirect(writer, request, "/sign-in", http.StatusSeeOther)
 		return
@@ -93,14 +93,14 @@ func LogoutHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func GetOnlineUsersHandler(writer http.ResponseWriter, request *http.Request) {
-    users, err := utils.GetOnlineUsers()
-    if err != nil {
-        http.Error(writer, "Error retrieving online users", http.StatusInternalServerError)
-        return
-    }
+	users, err := utils.GetOnlineUsers()
+	if err != nil {
+		http.Error(writer, "Error retrieving online users", http.StatusInternalServerError)
+		return
+	}
 
 	// fmt.Println("Online users from OnlineUsersHandler", users)
 
-    writer.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(writer).Encode(users)
+	writer.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(writer).Encode(users)
 }

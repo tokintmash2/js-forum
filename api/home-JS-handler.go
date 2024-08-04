@@ -16,7 +16,7 @@ func HomeJSONHandler(writer http.ResponseWriter, request *http.Request) {
 
 	if err == nil {
 		sessionUUID := sessionCookie.Value
-		userID, validSession := utils.VerifySession(sessionUUID)
+		userID, validSession := utils.VerifySession(sessionUUID, "HomeJSONHandler")
 		if validSession {
 			loggedIn = true
 

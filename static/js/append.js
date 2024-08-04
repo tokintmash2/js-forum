@@ -12,10 +12,7 @@ export function appendOnlineUsers(users) {
         } else {
             const onlineUser = makeElements({type: 'div', name: 'user', contents: `No online users`})
             onlineUsers.appendChild(onlineUser)
-        }
-        
-     
-    
+        }    
     sidebar.appendChild(onlineUsers)
 }
 

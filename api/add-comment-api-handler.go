@@ -22,7 +22,7 @@ func AddCommentApiHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	sessionUUID := cookie.Value
-	userID, validSession := utils.VerifySession(sessionUUID)
+	userID, validSession := utils.VerifySession(sessionUUID, "AddCommentApiHandler")
 	if !validSession {
 		http.Redirect(writer, request, "/sign-in", http.StatusSeeOther)
 		return

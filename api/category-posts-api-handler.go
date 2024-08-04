@@ -29,7 +29,7 @@ func CategoryPostsApiHandler(writer http.ResponseWriter, request *http.Request) 
 
 	if err == nil {
 		sessionUUID := sessionCookie.Value
-		userID, validSession := utils.VerifySession(sessionUUID)
+		userID, validSession := utils.VerifySession(sessionUUID, "CategoryPostsApiHandler")
 		if validSession {
 			loggedIn = true
 

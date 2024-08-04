@@ -74,17 +74,21 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 
 	sessionCookie, err := r.Cookie("session")
 	if err != nil {
-		log.Println("Session cookie not found:", err)
+		log.Println("Session cookie not foundz:", err)
 		return
-	}	
+	}
+
+	if sessionCookie == nil {
+		log.Println("Session cookie is nil")
+		return
+	}
 
 	sessionUUID := sessionCookie.Value
-	userID, validSession := utils.VerifySession(sessionUUID)
+	userID, validSession := utils.VerifySession(sessionUUID, "wsHandler")
 
 	fmt.Println("Session cookie:", sessionCookie.Value)
 	fmt.Println("sessiomUUID:", sessionUUID)
 	fmt.Println("Verify session return:", userID, validSession)
-
 
 	if !validSession {
 		log.Println("Invalid session")

@@ -47,8 +47,9 @@ func CreateSessionCookie(sessionUUID string) *http.Cookie {
 	cookie := &http.Cookie{
 		Name:     "session",
 		Value:    sessionUUID,
+		// Path:     "/",
 		Expires:  expiration,
-		HttpOnly: true,
+		// HttpOnly: true,
 	}
 	return cookie
 }
@@ -68,11 +69,12 @@ func ClearSession(sessionUUID string) error {
 }
 
 // VerifySession checks if the provided session UUID exists and is still valid
-func VerifySession(requestUUID string) (int, bool) {
+func VerifySession(requestUUID string, caller string) (int, bool) {
+
 	var userID int
 	var expiry time.Time
 
-	fmt.Println("VerifySession:", requestUUID)
+	fmt.Println("VerifySession:", requestUUID, "caller:", caller)
 
 	// Query the database to fetch user ID and session expiry based on the session UUID
 	err := database.DB.QueryRow(`

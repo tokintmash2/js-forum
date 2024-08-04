@@ -16,7 +16,7 @@ func LikePostHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	sessionUUID := cookie.Value
-	userID, validSession := utils.VerifySession(sessionUUID)
+	userID, validSession := utils.VerifySession(sessionUUID, "LikePostHandler")
 	if !validSession {
 		http.Redirect(writer, request, "/sign-in", http.StatusSeeOther)
 		return
@@ -84,7 +84,7 @@ func DislikePostHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	sessionUUID := cookie.Value
-	userID, validSession := utils.VerifySession(sessionUUID)
+	userID, validSession := utils.VerifySession(sessionUUID, "DislikePostHandler")
 	if !validSession {
 		http.Redirect(writer, request, "/sign-in", http.StatusSeeOther)
 		return
