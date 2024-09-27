@@ -1,6 +1,9 @@
 import { renderHomePage } from "./render.js";
 import { appendNewComment } from "./append.js";
 
+export let ws
+let UUID
+
 export async function login() {
 
     const email = document.getElementById('login-email').value;
@@ -18,79 +21,77 @@ export async function login() {
 
     const loginResponse = await fetch('/api/login', {
         method: 'POST',
-        body: JSON.stringify({ email: email, password: password }),
+        body: JSON.stringify({ email: email, password: password}),
         headers: { 'Content-Type': 'application/json' },
     });
 
     const loginData = await loginResponse.json();
     if (loginData.success) {
+        UUID = loginData.UUID; // Assuming the server sends a UUID
+        const userid = loginData.userID
+        localStorage.setItem('UUID', UUID);
+        console.log(UUID)
+        console.log(userid);
+        console.log(loginData)
+
         // Wait for the cookie to be set
         setTimeout(() => {
-            const ws = new WebSocket('ws://localhost:4000/ws');
-            ws.onopen = () => {
-                console.log('WebSocket connection established');
-            };
-        }, 1000); // Adjust the timeout as necessary
-        window.location.href = '/'
+            websocket(userid)
+        }, 1000); // Adjust the timeout as necessary - set from 1000 to 2000 to see if it fixes the userID issue
+
+
+
+        // window.location.href = '/'
     } else {
         console.log('Login failed:', loginData.message);
     }
 }
 
+export function websocket(userid) {
+    ws = new WebSocket('ws://localhost:4000/ws&userID=' + userid);
+    ws.onopen = () => {
+        console.log('WebSocket connection established');
+    }
 
-// export function login() {
-//     const email = document.getElementById('login-email').value;
-//     const password = document.getElementById('login-password').value;
+    ws.onmessage = function (event) {
+        let message = JSON.parse(event.data)
+        console.log("Received message:", message.content)
+    }
 
-//     if (!email || !password) {
-//         alert('Both fields are required.');
-//         return;
-//     }
+    ws.onerror = function (error) {
+        console.error("WebSocket Error:", error);
+    };
 
-//     if (!validateEmail(email)) {
-//         alert('Please enter a valid email address.');
-//         return;
-//     }
+    ws.onclose = function (event) {
+        ws = null
+    };
+}
 
-//     fetch('/api/login', {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json'
-//         },
-//         body: JSON.stringify({ email: email, password: password })
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         if (data.success) {
-//             alert('Login successful');
-//             console.log("Session UUID in response:", data.sessionUUID);
-//             connectWebSocket();
-//         } else {
-//             alert('Login failed: ' + data.message);
-//         }
-//     })
-//     .catch(error => console.error('Error:', error));
-// }
+function hasCookies() {
+    console.log(document.cookie)
+    return document.cookie.split(';').some(cookie => cookie.trim().startsWith('session='));
+}
 
-// function connectWebSocket() {
-//     const socket = new WebSocket('ws://localhost:4000/ws');
+window.addEventListener('load', function () {
+    UUID = localStorage.getItem('UUID');
+    if (UUID) {
+        console.log("Session found, establishing WebSocket connection");
+        websocket();
+    }
+});
 
-//     socket.onopen = function() {
-//         console.log('WebSocket connection established');
-//     };
+export function sendMessage() {
+    const msgInput = document.getElementById('textInput')
+    const recInput = document.getElementById('numberInput')
 
-//     socket.onclose = function(event) {
-//         if (event.wasClean) {
-//             console.log('WebSocket connection closed cleanly');
-//         } else {
-//             console.log('WebSocket connection closed unexpectedly');
-//         }
-//     };
+    const msg = JSON.stringify(({ recipient: `${recInput.value}`, content: `${msgInput.value}` }))
+    console.log(msg)
+    ws.send(msg)
+    msgInput.value = ''
+}
 
-//     socket.onerror = function(error) {
-//         console.error('WebSocket error:', error);
-//     };
-// }
+
+
 
 
 export function signup() {
@@ -235,6 +236,8 @@ export function handleLogout() {
         .then(data => {
             if (data.success) {
                 document.getElementById('app').innerHTML = ''
+                UUID = undefined;
+                localStorage.removeItem('UUID');
                 console.log('Logout successful');
                 window.location.href = '/'
             } else {

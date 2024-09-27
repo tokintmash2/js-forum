@@ -1,12 +1,20 @@
 import { makeElements } from './make-elements.js';
 import { handleCommentLikes } from './JS-handlers.js';
+import { loadConversation } from './fetch.js';
 
 export function appendOnlineUsers(users) {
     const sidebar = document.getElementsByClassName('sidebar')[0]
+    sidebar.innerHTML = ''
     const onlineUsers = makeElements({type: 'div', name: 'online-users'}) // Div for users
         if(users) {
             users.forEach(user => {
-                const onlineUser = makeElements({type: 'div', name: 'user', contents: `${user.Username}`}) // User
+                const onlineUser = makeElements({
+                    type: 'div',
+                    name: 'user',
+                    classNames: `${user.ID}`,
+                    contents: `${user.Username}`
+                }) // User
+                onlineUser.addEventListener('click', () => loadConversation(user.ID, user.Username));
                 onlineUsers.appendChild(onlineUser)
             })    
         } else {
@@ -14,7 +22,25 @@ export function appendOnlineUsers(users) {
             onlineUsers.appendChild(onlineUser)
         }    
     sidebar.appendChild(onlineUsers)
+    appendChat()
 }
+
+export function appendChat() {
+    const sidebar = document.getElementsByClassName('sidebar')[0]
+    const chatArea = makeElements({type: 'div', classNames: 'chatArea'})
+    const chat = makeElements({type: 'div', classNames: 'chat'})
+
+    chatArea.appendChild(chat);    
+
+    const chatInput = makeElements({ type: 'textarea', classNames: 'chat-input', placeholder: 'Write a message...' });
+    const sendButton = makeElements({ type: 'button', classNames: 'sendButton', contents: 'Send' });
+    
+    chatArea.appendChild(chatInput);
+    chatArea.appendChild(sendButton);
+    sidebar.appendChild(chatArea)
+}
+
+
 
 export function appendNewComment(comment) {
 

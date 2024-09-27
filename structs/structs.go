@@ -1,8 +1,19 @@
 package structs
 
 import (
+	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
+
+// Chat message
+type Message struct {
+	Recipient string `json:"recipient"`
+	Content   string `json:"content"`
+	Sender    int
+	CreatedAt time.Time
+}
 
 // User represents user data
 type User struct {
@@ -14,11 +25,17 @@ type User struct {
 	GoogleID string
 }
 
-type Message struct {
-    SenderID   int    `json:"sender_id"`
-    ReceiverID int    `json:"receiver_id"`
-    Content    string `json:"content"`
-    Timestamp  string `json:"timestamp"`
+type SocketMessage struct {
+	Type string
+	OnlineUsers []string
+}
+
+type Client struct {
+	Connection  *websocket.Conn
+	Send        chan []byte
+	Mu          sync.Mutex
+	ConnOwnerId string
+	LastActive  time.Time
 }
 
 type PostDetails struct {

@@ -1,5 +1,5 @@
 import { fetchCatPosts, fetchOnlineUsers } from './fetch.js';
-import { handleLogout } from "./JS-handlers.js"
+import { handleLogout, ws, websocket } from "./JS-handlers.js"
 import { makeElements } from './make-elements.js';
 import { renderCreatePost, renderHomePage, signIn, signUp } from './render.js';
 import { navbar } from './navbar.js';
@@ -57,8 +57,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-
-
     function renderMyPosts() {
         appDiv.innerHTML = '';
         navbar()
@@ -75,15 +73,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderCategoryPage(id) {
         appDiv.innerHTML = ''
-        const pageTitle = makeElements({ type: 'h2', name: 'Title', contents: 'Posts in this Category' })
-        mainContent.appendChild(pageTitle)
         appDiv.appendChild(mainContent)
 
         fetchCatPosts(appDiv, id)
             .then(() => { // Waiting for the promise until appending next child
                 appDiv.appendChild(chatSection)
             })
-            .catch(console.error('Error fetching category posts:', error))
+        // .catch(console.error('Error fetching category posts:', error))
     }
 
     // signIn()
@@ -102,6 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('Popstate triggered:', window.location.pathname);
         handleRoute(window.location.pathname);
     };
+  
 
     // Handle the initial route
     handleRoute();

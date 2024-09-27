@@ -2,23 +2,23 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"real-forum/api"
 	"real-forum/database"
 	"real-forum/handlers"
-	"real-forum/utils"
 
-	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var upgrader = websocket.Upgrader{}
 var db *sql.DB
 
 func main() {
 	var err error
+
+	// server := &WebSocketServer{
+	// 	clients: make(map[string]*Client),
+	// }
 
 	// Connect to the SQLite database
 	db, err = sql.Open("sqlite3", "forum.db")
@@ -40,8 +40,11 @@ func main() {
 	// Define HTTP request handlers for various endpoints
 	mux.HandleFunc("/", handlers.NotFoundWrapper(handlers.HomePageHandler))
 
+	//ws manager test
+
 	// -------- JAvaScript API ---------
-	mux.HandleFunc("/ws", wsHandler)
+	mux.HandleFunc("/ws", api.HandleConnections)
+	mux.HandleFunc("/api/conversation/", api.ChatHandler)
 	mux.HandleFunc("/api/categories", api.CategoriesHandler)
 	mux.HandleFunc("/api/recents", api.RecentPostsHandler)
 	mux.HandleFunc("/api/home", api.HomeJSONHandler)
@@ -62,53 +65,4 @@ func main() {
 	// Start the server on port 4000 and log its status
 	log.Println("Server started at :4000")
 	log.Fatal(http.ListenAndServe(":4000", mux))
-}
-
-func wsHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer conn.Close()
-
-	sessionCookie, err := r.Cookie("session")
-	if err != nil {
-		log.Println("Session cookie not foundz:", err)
-		return
-	}
-
-	if sessionCookie == nil {
-		log.Println("Session cookie is nil")
-		return
-	}
-
-	sessionUUID := sessionCookie.Value
-	userID, validSession := utils.VerifySession(sessionUUID, "wsHandler")
-
-	fmt.Println("Session cookie:", sessionCookie.Value)
-	fmt.Println("sessiomUUID:", sessionUUID)
-	fmt.Println("Verify session return:", userID, validSession)
-
-	if !validSession {
-		log.Println("Invalid session")
-		return
-	}
-
-	log.Println("User connected:", userID)
-
-	err = utils.SetUserOnline(userID)
-	if err != nil {
-		log.Println("Error setting user online:", err)
-		return
-	}
-
-	for {
-		_, _, err := conn.ReadMessage()
-		if err != nil {
-			utils.SetUserOffline(userID)
-			log.Println("User disconnected:", userID)
-			break
-		}
-	}
 }

@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+// var userIDWS int
+
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	var user structs.User
@@ -28,7 +30,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		cookie := utils.CreateSessionCookie(sessionUUID)
 		http.SetCookie(w, cookie)
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "sessionUUID": sessionUUID})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "sessionUUID": sessionUUID, "userID": userID})
+		// userIDWS = userID
 	} else {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Wrong email or password"})
 	}

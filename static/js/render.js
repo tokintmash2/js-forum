@@ -1,6 +1,6 @@
 import { fetchCategories, fetchRecentPosts, makeCatChkboxes } from "./fetch.js";
 import { makeElements } from "./make-elements.js";
-import { login, creatPostHandler, signup } from "./JS-handlers.js"
+import { login, creatPostHandler, signup, sendMessage } from "./JS-handlers.js"
 import { navbar } from "./navbar.js";
 
 // Get appDiv
@@ -9,31 +9,39 @@ appDiv.innerHTML = '';
 
 export function renderHomePage() {
     appDiv.innerHTML = '';
+
+    // Testing ------ 
+
+    sendMessageBtn.addEventListener('click', sendMessage);
+
+    // window.sendMessage = sendMessage;
+    // ------------
+
     navbar()
-    const mainContent = makeElements({type: 'div', classNames: 'main-content'})
-    const chatSection = makeElements({type: 'div', classNames: 'sidebar'})
+    // appDiv.appendChild(testForm) // Test
+    const mainContent = makeElements({ type: 'div', classNames: 'main-content' })
+    const sidebar = makeElements({ type: 'div', classNames: 'sidebar' })
     // Create category headline
-    const catHeader = makeElements({type:'h2', name:'JScatHeader', classNames:'category-header', contents:'Categories'})
+    const catHeader = makeElements({ type: 'h2', name: 'JScatHeader', classNames: 'category-header', contents: 'Categories' })
     mainContent.appendChild(catHeader)
     // Create category list
-    const list = makeElements({type:'div', name:'categoryList', classNames:'categories-container'})
+    const list = makeElements({ type: 'div', name: 'categoryList', classNames: 'categories-container' })
     // Insert categories right after category header
     catHeader.insertAdjacentElement('afterend', list);
 
-    const rcntPostsHeader = makeElements({type:'h2', name:'JSrcntsHeader', classNames:'category-header', contents:'Recent posts'})
-    mainContent.appendChild(rcntPostsHeader)    
-    
-    appDiv.appendChild(mainContent)
-    appDiv.appendChild(chatSection)
+    const rcntPostsHeader = makeElements({ type: 'h2', name: 'JSrcntsHeader', classNames: 'category-header', contents: 'Recent posts' })
+    mainContent.appendChild(rcntPostsHeader)
 
     fetchCategories(list)
     fetchRecentPosts(mainContent)
+    appDiv.appendChild(mainContent)
+    appDiv.appendChild(sidebar)
 }
 
 export function signIn() {
     appDiv.innerHTML = '';
-    const formContainer = makeElements({ type:'div', classNames:'container' })
-    const pageTitle = makeElements({ type:'h1', contents:'Sing in' })
+    const formContainer = makeElements({ type: 'div', classNames: 'container' })
+    const pageTitle = makeElements({ type: 'h1', contents: 'Sing in' })
     const usernameField = makeElements({ type: 'div', name: 'email' })
     const passwordField = makeElements({ type: 'div', name: 'password' })
 
@@ -57,8 +65,8 @@ export function signIn() {
 
 export function signUp() {
     appDiv.innerHTML = '';
-    const formContainer = makeElements({ type:'div', classNames:'container' })
-    const pageTitle = makeElements({ type:'h1', contents:'Sing up' })
+    const formContainer = makeElements({ type: 'div', classNames: 'container' })
+    const pageTitle = makeElements({ type: 'h1', contents: 'Sing up' })
     const usernameField = makeElements({ type: 'div', name: 'username' })
     const emailField = makeElements({ type: 'div', name: 'email' })
     const passwordField = makeElements({ type: 'div', name: 'password' })

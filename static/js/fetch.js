@@ -4,12 +4,45 @@ import { reinitializeCommentFunctionality } from "./commentToggle.js"
 import { appendComments, appendOnlineUsers } from "./append.js";
 
 export function fetchOnlineUsers() {
-    fetch('/api/online-user')
+    function doit() {
+        fetch('/api/online-user')
         .then(response => response.json())
         .then(users => appendOnlineUsers(users)) // Append users to sidebar
         .catch(error => {
             console.error('Error fetching online users:', error);
         });
+    }
+
+    doit() // Fetch first time
+    
+    setInterval(() => { doit() }, 5000) // Fetch each 5 sec
+}
+
+export async function loadConversation(partnerID, partnerUsername) {
+    const chat = document.getElementsByClassName('chat')[0]
+    console.log('Partner: ', partnerUsername)
+    console.log(`/api/conversation/${ partnerID }`)
+    
+    chat.innerHTML = `Chat with ${ partnerUsername }`
+
+
+
+    const response = await fetch(`/api/conversation/${ partnerID }`)
+    // const response = await fetch(`/api/conversation`)
+    const messages = await response.json()
+
+    chat.innerHTML = ''
+
+    messages.forEach(message => {
+        const messageElement = makeElements({
+            type: 'div',
+            classNames: message.sender === partnerID ? 'message-received' : 'message-sent',
+            contents: `${message.sender}: ${message.content}`
+        })
+        console.log(messageElement.innerHTML)
+    })
+
+    console.log('mess:', messages)
 }
 
 export function fetchCategories(list) {
@@ -70,6 +103,10 @@ export function makeCatChkboxes(container) {
 
 export function fetchCatPosts(body, id) {
     const mainContent = body.querySelector('.main-content');
+    
+    mainContent.innerHTML = ''
+    const pageTitle = makeElements({ type: 'h2', name: 'Title', contents: 'Posts in this Category' })
+    mainContent.appendChild(pageTitle)
     // const chatSection = body.children[1]
    return fetch(`/api/category/${id}`) // Promise so, render function can wait
         .then(response => {
@@ -134,8 +171,9 @@ export function fetchCatPosts(body, id) {
                     mainContent.appendChild(postDiv)                    
                 });
             } else {
-                const noPosts = makeElements('div', '', '', 'No posts in this category.', '')
-                body.appendChild(noPosts);
+                const noPosts = makeElements({ type: 'h2', name: 'Title', contents: 'No posts in this Category' })
+                mainContent.innerHTML = ''
+                mainContent.appendChild(noPosts);
             }
             fetchOnlineUsers()
             body.appendChild(mainContent);
