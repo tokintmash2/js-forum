@@ -16,8 +16,9 @@ func NotFoundWrapper(handler http.HandlerFunc) http.HandlerFunc {
 			r.URL.Path != "/dislike" &&
 			r.URL.Path != "/my-posts" &&
 			r.URL.Path != "/logout" &&
+			// r.URL.Path != "/log-in" &&
 			r.URL.Path != "/sign-in" &&
-			r.URL.Path != "/sign-up" &&
+			r.URL.Path != "/register" &&
 			r.URL.Path != "/sign-in-form" &&
 			r.URL.Path != "/sign-up-form" &&
 			r.URL.Path != "/category" &&

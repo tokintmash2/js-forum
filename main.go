@@ -38,13 +38,13 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	// Define HTTP request handlers for various endpoints
-	mux.HandleFunc("/", handlers.NotFoundWrapper(handlers.HomePageHandler))
+	mux.HandleFunc("/", handlers.HomePageHandler)
 
 	//ws manager test
 
 	// -------- JAvaScript API ---------
 	mux.HandleFunc("/ws", api.HandleConnections)
-	mux.HandleFunc("/api/conversation/", api.ChatHandler)
+	// mux.HandleFunc("/api/conversation/", api.ChatHandler)
 	mux.HandleFunc("/api/categories", api.CategoriesHandler)
 	mux.HandleFunc("/api/recents", api.RecentPostsHandler)
 	mux.HandleFunc("/api/home", api.HomeJSONHandler)

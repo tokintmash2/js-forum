@@ -47,7 +47,7 @@ func CreateSessionCookie(sessionUUID string) *http.Cookie {
 	cookie := &http.Cookie{
 		Name:     "session",
 		Value:    sessionUUID,
-		// Path:     "/",
+		Path:     "/",
 		Expires:  expiration,
 		// HttpOnly: true,
 	}

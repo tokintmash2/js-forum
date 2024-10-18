@@ -9,26 +9,44 @@ import (
 
 // Chat message
 type Message struct {
-	Recipient string `json:"recipient"`
-	Content   string `json:"content"`
-	Sender    int
-	CreatedAt time.Time
+	Type             string     `json:"type"`
+	OnlineUsers      []UserInfo `json:"online_users"`
+	Recipient        string     `json:"recipient"`
+	SenderUsername   string     `json:"sender_username"`
+	ReceiverUsername string     `json:"receiver_username"`
+	Content          string     `json:"content"`
+	Sender           int        `json:"sender"`
+	CreatedAt        time.Time  `json:"created_at"`
 }
 
 // User represents user data
 type User struct {
-	ID       int
-	Email    string
-	Password string
-	Username string
-	GitHubID string
-	GoogleID string
+	ID         int
+	Email      string
+	Password   string
+	Username   string
+	FirstName  string
+	LastName   string
+	Age        int
+	Gender     string
+	Identifier string
 }
 
 type SocketMessage struct {
-	Type string
-	OnlineUsers []string
+	Type        string     `json:"type"`
+	OnlineUsers []UserInfo `json:"online_users"`
+	Content     string     `json:"content"`
 }
+
+type UserInfo struct {
+	ID       int    `json:"ID"`
+	Username string `json:"Username"`
+}
+
+// type SocketMessage struct {
+// 	Type string
+// 	OnlineUsers []UserInfo
+// }
 
 type Client struct {
 	Connection  *websocket.Conn

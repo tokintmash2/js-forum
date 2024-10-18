@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"real-forum/utils"
 	"strconv"
 	"strings"
-	"real-forum/utils"
+	"time"
 )
 
 func ChatHandler(writer http.ResponseWriter, request *http.Request) {
@@ -40,7 +41,7 @@ func ChatHandler(writer http.ResponseWriter, request *http.Request) {
 
 		log.Println(userID, partnerID)
 
-		data := utils.GetRecentMessages(userID, partnerID)
+		data := utils.GetRecentMessages(userID, partnerID, time.Now())
 
 		jsonData, err := json.Marshal(data)
 		if err != nil {

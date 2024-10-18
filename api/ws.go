@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"real-forum/structs"
 	"real-forum/utils"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -14,9 +15,9 @@ import (
 )
 
 var (
-	connections = make(map[string]*Client)
-	broadcast   = make(chan structs.SocketMessage)
-	mu          sync.Mutex
+	connectionsMap   = make(map[string]*Client)
+	broadcastChannel = make(chan structs.Message)
+	mu               sync.Mutex
 )
 
 func init() {
@@ -41,119 +42,216 @@ type Client struct {
 	lastActive  time.Time
 }
 
-// type Message struct {
-// 	Recipient string `json:"recipient"`
-// 	Content   string `json:"content"`
-// 	Sender int
-// 	CreatedAt time.Time
-// }
-
 func HandleConnections(w http.ResponseWriter, r *http.Request) {
-    // Extract user ID from the request (e.g., from a query parameter or header)
-    userID := r.URL.Query().Get("userID")
-    if userID == "" {
-        http.Error(w, "userID is required", http.StatusBadRequest)
-        return
-    }
 
-    // Upgrade initial GET request to a websocket
-    conn, err := upgrader.Upgrade(w, r, nil)
-    if err != nil {
-        log.Println("Upgrade error:", err)
-        return
-    }
+	// userID := strconv.Itoa(userIDWS)
 
-    // Add client data
-    client := &Client{
-        connection:  conn,
-        connOwnerId: userID,
-        send:        make(chan []byte, 256),
-    }
+	cookie, err := r.Cookie("session")
+	if err != nil {
+		log.Println("Error getting session cookie:", err)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
-    log.Println("Client ID: ", client.connOwnerId)
+	sessionUUID := cookie.Value
+	log.Println("Session UUID:", sessionUUID)
 
-    mu.Lock()
-    connections[userID] = client
-    onlineUsers := make([]string, 0, len(connections))
-    for uid := range connections {
-        userInt, _ := strconv.Atoi(uid)
-        user, _ := utils.GetUsername(userInt)
-        onlineUsers = append(onlineUsers, user)
-    }
+	// Use sessionUUID to get userID
+	userID, _ := utils.VerifySession(sessionUUID, "Handleconnections")
+	if err != nil {
+		log.Println("Invalid session:", err)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
-    message := structs.SocketMessage{
-        Type:        "online_users",
-        OnlineUsers: onlineUsers,
-    }
+	userIDStr := strconv.Itoa(userID)
 
-    broadcast <- message
-    mu.Unlock()
+	// Upgrade initial GET request to a websocket
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// defer conn.Close()
 
-    go handleClientRead(conn, client, userID)
-    go handleClientWrite(client, userID)
+	// Add client data
+	client := &Client{
+		connection:  conn,
+		connOwnerId: userIDStr,
+		send:        make(chan []byte, 256),
+	}
+
+	log.Println("Client ID: ", client.connOwnerId)
+
+	mu.Lock()
+	connectionsMap[userIDStr] = client
+
+	message := onlineUsers()
+	log.Println("Broadcasting online users:", message)
+
+	broadcastChannel <- message
+	mu.Unlock()
+
+	// Start goroutines for reading and writing
+	go func() {
+		defer func() {
+			conn.Close()
+			mu.Lock()
+			delete(connectionsMap, userIDStr)
+
+			message := onlineUsers()
+
+			broadcastChannel <- message
+			mu.Unlock()
+		}()
+		for {
+			_, message, err := conn.ReadMessage() // Read whatever message is received
+			if err != nil {
+				log.Println("error reading message", err)
+				break
+			}
+
+			var msg structs.Message
+			err = json.Unmarshal(message, &msg)
+			if err != nil {
+				log.Println("Error unmarshalling message:", err)
+				continue
+			}
+
+			log.Println("Received message:", msg)
+			log.Println("Message date:", msg.CreatedAt)
+
+			switch msg.Type {
+
+			case "get_conversations":
+				log.Println("Received get_conversations request")
+
+				partner, _ := strconv.Atoi(msg.Recipient)
+				oldestMessageTime := msg.CreatedAt
+				log.Println("Partner ID in switch:", partner)			
+				response := utils.GetRecentMessages(userID, partner, oldestMessageTime)
+				log.Println("Response:", response)
+
+				for _, responseMSG := range response {
+					// broadcastChannel <- responseMSG
+					sendMessage(client, responseMSG)
+				}
+				continue
+			case "user-message":
+				prepMessage(&msg, userID)
+
+				mu.Lock()
+				recipientConn, ok := connectionsMap[msg.Recipient]
+				log.Println("connection:", recipientConn)
+				mu.Unlock()
+
+				if ok {
+					handleNewMessage(msg)
+				} else {
+					log.Println("Recipient is not connected")
+				}
+
+			default:
+				log.Println("Unknown message type:", msg.Type)
+			}
+		}
+	}()
+
+	go func(client *Client) {
+		defer func() {
+			conn.Close()
+			mu.Lock()
+			delete(connectionsMap, userIDStr)
+			mu.Unlock()
+		}()
+
+		for message := range client.send {
+			client.mu.Lock()
+			err := client.connection.WriteMessage(websocket.TextMessage, message)
+			client.mu.Unlock()
+
+			if err != nil {
+				log.Println("Error writing message:", err)
+				return
+			}
+		}
+	}(client)
+
 }
 
-func handleClientRead(conn *websocket.Conn, client *Client, userID string) {
-    defer func() {
-        // Cleanup: Close the WebSocket connection when the goroutine exits
-        conn.Close()
+func onlineUsers() structs.Message {
+	onlineUsers := make([]structs.UserInfo, 0, len(connectionsMap))
+	for uid := range connectionsMap {
+		userInt, _ := strconv.Atoi(uid)
+		username, _ := utils.GetUsername(userInt)
+		onlineUsers = append(onlineUsers, structs.UserInfo{ID: userInt, Username: username})
+	}
 
-        // Remove the client from the connections map
-        mu.Lock()
-        delete(connections, userID)
-        mu.Unlock()
-    }()
-    for {
-        // Read message from browser
-        _, message, err := conn.ReadMessage()
-        if err != nil {
-            log.Println("error reading message", err)
-            break
-        }
+	sort.Slice(onlineUsers, func(i, j int) bool { // Sort by username
+		return onlineUsers[i].Username < onlineUsers[j].Username
+	})
 
-        var msg structs.Message
-        err = json.Unmarshal(message, &msg)
-        if err != nil {
-            log.Println("Error unmarshalling message:", err)
-            continue
-        }
+	message := structs.Message{
+		Type:        "online_users",
+		OnlineUsers: onlineUsers,
+	}
 
-        senderID, _ := strconv.Atoi(userID)
-        prepMessage(&msg, senderID) // Add timestamp and sender
-
-        mu.Lock()
-        recipientConn, ok := connections[msg.Recipient]
-        mu.Unlock()
-
-        if ok {
-            sendMessage(recipientConn, msg)
-        } else {
-            log.Println("Recipient is not connected")
-        }
-    }
+	return message
 }
 
-func handleClientWrite(client *Client, userID string) {
-    defer func() {
-        client.connection.Close()
-        mu.Lock()
-        delete(connections, userID)
-        mu.Unlock()
-    }()
+// read & write goroutines are currently doubling the HandleConnections function
 
-    // Listen on the send channel for outgoing messages
-    for message := range client.send {
-        client.mu.Lock()
-        err := client.connection.WriteMessage(websocket.TextMessage, message)
-        client.mu.Unlock()
+func handleClientRead(conn *websocket.Conn, client *Client, userID int) {
+	defer func() {
+		// Cleanup code
+	}()
+	for {
+		// Read message from browser
+		_, message, err := conn.ReadMessage()
+		if err != nil {
+			log.Println("error reading message", err)
+			break
+		}
 
-        if err != nil {
-            log.Println("Error writing message:", err)
-            return
-        }
-    }
+		var msg structs.Message
+		err = json.Unmarshal(message, &msg)
+		if err != nil {
+			log.Println("Error unmarshalling message:", err)
+			continue
+		}
+
+		prepMessage(&msg, userID) // Use the userID from the session
+
+		mu.Lock()
+		recipientConn, ok := connectionsMap[msg.Recipient]
+		mu.Unlock()
+
+		if ok {
+			sendMessage(recipientConn, msg)
+		} else {
+			log.Println("Recipient is not connected")
+		}
+	}
 }
 
+func handleClientWrite(client *Client, userIDStr string) {
+	defer func() {
+		client.connection.Close()
+		mu.Lock()
+		delete(connectionsMap, userIDStr)
+		mu.Unlock()
+	}()
+
+	for message := range client.send {
+		client.mu.Lock()
+		err := client.connection.WriteMessage(websocket.TextMessage, message)
+		client.mu.Unlock()
+
+		if err != nil {
+			log.Println("Error writing message:", err)
+			return
+		}
+	}
+}
 
 func prepMessage(m *structs.Message, senderID int) {
 	m.Sender = senderID
@@ -171,8 +269,9 @@ func sendMessage(recipientConn *Client, msg structs.Message) {
 	// Send the message into the recipient's send channel (non-blocking)
 	select {
 	case recipientConn.send <- messageData:
-		utils.SaveMessage(msg)
+		// utils.SaveMessage(msg)
 		// Successfully added the message to the recipient's send channel
+
 	default:
 		// Channel is full or blocked, handle disconnect, or log a warning
 		log.Println("Recipient channel is full, disconnecting")
@@ -180,21 +279,37 @@ func sendMessage(recipientConn *Client, msg structs.Message) {
 	}
 }
 
+func handleNewMessage(msg structs.Message) {
+    // Save message to database once
+    utils.SaveMessage(msg)
+
+    // Send to recipient
+    if recipientConn, ok := connectionsMap[msg.Recipient]; ok {
+        sendMessage(recipientConn, msg)
+    }
+
+    // Send back to sender
+    if senderConn, ok := connectionsMap[strconv.Itoa(msg.Sender)]; ok {
+        sendMessage(senderConn, msg)
+    }
+}
+
 func broadcastOnlineUsers() {
 	for {
-		message := <-broadcast
+		message := <-broadcastChannel
 
-		messageJSON, _ := json.Marshal(message.OnlineUsers)
+		messageJSON, _ := json.Marshal(message)
+		// messageJSON, _ := json.Marshal(message.OnlineUsers)
 
 		log.Println(message)
 
 		mu.Lock()
-		for _, client := range connections {
+		for _, client := range connectionsMap {
 			select {
 			case client.send <- []byte(messageJSON):
 			default:
 				close(client.send)
-				delete(connections, client.connOwnerId)
+				delete(connectionsMap, client.connOwnerId)
 			}
 		}
 		mu.Unlock()

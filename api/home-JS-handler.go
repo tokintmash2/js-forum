@@ -13,11 +13,13 @@ func HomeJSONHandler(writer http.ResponseWriter, request *http.Request) {
 	sessionCookie, err := request.Cookie("session")
 	loggedIn := false
 	var username string
+	var userId int
 
 	if err == nil {
 		sessionUUID := sessionCookie.Value
 		userID, validSession := utils.VerifySession(sessionUUID, "HomeJSONHandler")
 		if validSession {
+			userId = userID
 			loggedIn = true
 
 			// Fetch username for the logged-in user
@@ -80,11 +82,13 @@ func HomeJSONHandler(writer http.ResponseWriter, request *http.Request) {
 	// Prepare data for rendering the template
 	data := struct {
 		LoggedIn    bool
+		UserId      int
 		Username    string
 		RecentPosts []structs.PostDetails
 		Categories  []structs.Category
 	}{
 		LoggedIn:    loggedIn,
+		UserId:      userId,
 		Username:    username,
 		RecentPosts: recentPosts,
 		Categories:  allCategories,

@@ -13,7 +13,15 @@ import (
 func VerifyUser(user structs.User) (int, bool) {
 	var storedPassword string
 	var userID int
-	err := database.DB.QueryRow("SELECT id, password FROM users WHERE email = ?", user.Email).Scan(&userID, &storedPassword)
+
+	err := database.DB.QueryRow(`
+    SELECT id, password 
+    FROM users 
+    WHERE (email = ? OR username = ?) 
+    LIMIT 1`,
+		user.Identifier, user.Identifier,
+	).Scan(&userID, &storedPassword)
+
 	// fmt.Printf("Useri email %v", user.Email)
 	if err != nil {
 		return 0, false
@@ -22,38 +30,48 @@ func VerifyUser(user structs.User) (int, bool) {
 	return userID, err == nil
 }
 
-func CreateUser(newUser structs.User) error {
+func CreateUser(newUser structs.User) (int, error) {
 	var emailCount, usernameCount int
 	err := database.DB.QueryRow("SELECT COUNT(*) FROM users WHERE email = ?", newUser.Email).Scan(&emailCount)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	err = database.DB.QueryRow("SELECT COUNT(*) FROM users WHERE username = ?", newUser.Username).Scan(&usernameCount)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if emailCount > 0 {
-		return errors.New("email already exists")
+		return 0, errors.New("email already exists")
 	}
 	if usernameCount > 0 {
-		return errors.New("username already exists")
+		return 0, errors.New("username already exists")
 	}
 
 	passwordHash, err := getPasswordHash(newUser.Password)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	result, err := database.DB.Exec("INSERT INTO users (email, password, username, github_id, google_id) VALUES (?, ?, ?, ?, ?)", newUser.Email, passwordHash, newUser.Username, "", "")
+	result, err := database.DB.Exec("INSERT INTO users (email, password, username, firstName, lastName, age, gender) VALUES (?, ?, ?, ?, ?, ?, ?)", newUser.Email, passwordHash, newUser.Username, newUser.FirstName, newUser.LastName, newUser.Age, newUser.Gender)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
+
+	// Retrieve the last inserted ID
+	userID, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	// Check if the insertion affected any rows
 	rowsAffected, err := result.RowsAffected()
 	if err != nil || rowsAffected == 0 {
-		return fmt.Errorf("user creation failed for email: %s", newUser.Email)
+		return 0, fmt.Errorf("user creation failed for email: %s", newUser.Email)
 	}
-	return nil
+
+	// Return the generated user ID
+	return int(userID), nil
 }
 
 func getPasswordHash(password string) (string, error) {
